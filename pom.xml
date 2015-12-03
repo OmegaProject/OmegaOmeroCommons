@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+		http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+    <parent>
+        <groupId>ome</groupId>
+        <artifactId>pom-omero-client</artifactId>
+        <version>5.1.11</version>
+    </parent>
+	
+  	<groupId>omega.omero</groupId>
+ 	<artifactId>commons</artifactId>
+  	<version>0.0.1-SNAPSHOT</version>
+  	<packaging>jar</packaging>
+
+  	<name>OmeroCommons</name>
+  	<description>TBD</description>
+  	<url>TBD</url>
+
+  	<properties>
+ 		<main-class>OmeroCommons</main-class>
+  	</properties>
+
+  	<repositories>
+		<repository>
+			<id>imagej.public</id>
+			<url>http://maven.imagej.net/content/groups/public</url>
+		</repository>
+	</repositories>
+
+    <dependencies>
+        <dependency>
+          <groupId>omero</groupId>
+          <artifactId>blitz</artifactId>
+        </dependency>
+    </dependencies>
+</project>
