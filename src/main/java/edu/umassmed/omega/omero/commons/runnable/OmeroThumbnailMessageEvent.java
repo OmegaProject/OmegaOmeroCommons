@@ -1,0 +1,20 @@
+package main.java.edu.umassmed.omega.omero.commons.runnable;
+
+import java.util.List;
+
+import main.java.edu.umassmed.omega.commons.eventSystem.events.OmegaMessageEvent;
+import main.java.edu.umassmed.omega.omero.commons.data.OmeroThumbnailImageInfo;
+
+public class OmeroThumbnailMessageEvent extends OmegaMessageEvent {
+	private final List<OmeroThumbnailImageInfo> thumbnails;
+
+	public OmeroThumbnailMessageEvent(final String msg,
+	        final List<OmeroThumbnailImageInfo> thumbnails) {
+		super(msg);
+		this.thumbnails = thumbnails;
+	}
+
+	public List<OmeroThumbnailImageInfo> getThumbnails() {
+		return this.thumbnails;
+	}
+}
