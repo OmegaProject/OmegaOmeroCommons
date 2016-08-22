@@ -25,7 +25,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package main.java.edu.umassmed.omega.omero.commons.gui;
+package edu.umassmed.omega.omero.commons.gui;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -36,7 +36,7 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
 
-import main.java.edu.umassmed.omega.commons.constants.OmegaConstants;
+import edu.umassmed.omega.commons.constants.OmegaConstants;
 
 public class OmeroBrowserSingleImagePanel extends JPanel {
 

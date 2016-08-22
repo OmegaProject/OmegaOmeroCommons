@@ -25,9 +25,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package main.java.edu.umassmed.omega.omero.commons;
+package edu.umassmed.omega.omero.commons;
 
-import main.java.edu.umassmed.omega.commons.OmegaLogFileManager;
+import edu.umassmed.omega.commons.OmegaLogFileManager;
 
 /**
  * Keeps the services alive.

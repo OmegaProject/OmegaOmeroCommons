@@ -25,7 +25,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package main.java.edu.umassmed.omega.omero.commons.runnable;
+package edu.umassmed.omega.omero.commons.runnable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -34,10 +34,10 @@ import java.util.Map;
 
 import javax.swing.SwingUtilities;
 
-import main.java.edu.umassmed.omega.commons.OmegaLogFileManager;
-import main.java.edu.umassmed.omega.commons.eventSystem.events.OmegaMessageEvent;
-import main.java.edu.umassmed.omega.commons.gui.interfaces.OmegaMessageDisplayerPanelInterface;
-import main.java.edu.umassmed.omega.omero.commons.OmeroGateway;
+import edu.umassmed.omega.commons.OmegaLogFileManager;
+import edu.umassmed.omega.commons.eventSystem.events.OmegaMessageEvent;
+import edu.umassmed.omega.commons.gui.interfaces.OmegaMessageDisplayerPanelInterface;
+import edu.umassmed.omega.omero.commons.OmeroGateway;
 import omero.ServerError;
 import pojos.DatasetData;
 import pojos.ExperimenterData;

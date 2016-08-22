@@ -1,9 +1,9 @@
-package main.java.edu.umassmed.omega.omero.commons.runnable;
+package edu.umassmed.omega.omero.commons.runnable;
 
 import java.util.List;
 
-import main.java.edu.umassmed.omega.commons.eventSystem.events.OmegaMessageEvent;
-import main.java.edu.umassmed.omega.omero.commons.data.OmeroImageWrapper;
+import edu.umassmed.omega.commons.eventSystem.events.OmegaMessageEvent;
+import edu.umassmed.omega.omero.commons.data.OmeroImageWrapper;
 
 public class OmeroWrapperMessageEvent extends OmegaMessageEvent {
 

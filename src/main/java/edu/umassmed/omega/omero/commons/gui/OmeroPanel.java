@@ -25,7 +25,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package main.java.edu.umassmed.omega.omero.commons.gui;
+package edu.umassmed.omega.omero.commons.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -53,22 +53,22 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.RootPaneContainer;
 
-import main.java.edu.umassmed.omega.commons.OmegaLogFileManager;
-import main.java.edu.umassmed.omega.commons.eventSystem.events.OmegaMessageEvent;
-import main.java.edu.umassmed.omega.commons.exceptions.OmegaPluginExceptionStatusPanel;
-import main.java.edu.umassmed.omega.commons.gui.GenericPluginPanel;
-import main.java.edu.umassmed.omega.commons.gui.GenericStatusPanel;
-import main.java.edu.umassmed.omega.commons.gui.checkboxTree.CheckBoxStatus;
-import main.java.edu.umassmed.omega.commons.plugins.OmegaPlugin;
-import main.java.edu.umassmed.omega.omero.commons.OmeroGateway;
-import main.java.edu.umassmed.omega.omero.commons.data.OmeroDataWrapper;
-import main.java.edu.umassmed.omega.omero.commons.data.OmeroDatasetWrapper;
-import main.java.edu.umassmed.omega.omero.commons.data.OmeroImageWrapper;
-import main.java.edu.umassmed.omega.omero.commons.data.OmeroThumbnailImageInfo;
-import main.java.edu.umassmed.omega.omero.commons.runnable.OmeroBrowerPanelImageLoader;
-import main.java.edu.umassmed.omega.omero.commons.runnable.OmeroDataMessageEvent;
-import main.java.edu.umassmed.omega.omero.commons.runnable.OmeroThumbnailMessageEvent;
-import main.java.edu.umassmed.omega.omero.commons.runnable.OmeroWrapperMessageEvent;
+import edu.umassmed.omega.commons.OmegaLogFileManager;
+import edu.umassmed.omega.commons.eventSystem.events.OmegaMessageEvent;
+import edu.umassmed.omega.commons.exceptions.OmegaPluginExceptionStatusPanel;
+import edu.umassmed.omega.commons.gui.GenericPluginPanel;
+import edu.umassmed.omega.commons.gui.GenericStatusPanel;
+import edu.umassmed.omega.commons.gui.checkboxTree.CheckBoxStatus;
+import edu.umassmed.omega.commons.plugins.OmegaPlugin;
+import edu.umassmed.omega.omero.commons.OmeroGateway;
+import edu.umassmed.omega.omero.commons.data.OmeroDataWrapper;
+import edu.umassmed.omega.omero.commons.data.OmeroDatasetWrapper;
+import edu.umassmed.omega.omero.commons.data.OmeroImageWrapper;
+import edu.umassmed.omega.omero.commons.data.OmeroThumbnailImageInfo;
+import edu.umassmed.omega.omero.commons.runnable.OmeroBrowerPanelImageLoader;
+import edu.umassmed.omega.omero.commons.runnable.OmeroDataMessageEvent;
+import edu.umassmed.omega.omero.commons.runnable.OmeroThumbnailMessageEvent;
+import edu.umassmed.omega.omero.commons.runnable.OmeroWrapperMessageEvent;
 import pojos.ExperimenterData;
 import pojos.GroupData;
 

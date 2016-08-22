@@ -25,7 +25,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package main.java.edu.umassmed.omega.omero.commons.gui;
+package edu.umassmed.omega.omero.commons.gui;
 
 import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;
@@ -49,21 +49,21 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
-import main.java.edu.umassmed.omega.commons.OmegaLogFileManager;
-import main.java.edu.umassmed.omega.commons.data.coreElements.OmegaDataset;
-import main.java.edu.umassmed.omega.commons.data.coreElements.OmegaImage;
-import main.java.edu.umassmed.omega.commons.eventSystem.events.OmegaMessageEvent;
-import main.java.edu.umassmed.omega.commons.gui.GenericPanel;
-import main.java.edu.umassmed.omega.commons.gui.checkboxTree.CheckBoxNode;
-import main.java.edu.umassmed.omega.commons.gui.checkboxTree.CheckBoxNodeEditor;
-import main.java.edu.umassmed.omega.commons.gui.checkboxTree.CheckBoxNodeRenderer;
-import main.java.edu.umassmed.omega.commons.gui.checkboxTree.CheckBoxStatus;
-import main.java.edu.umassmed.omega.omero.commons.OmeroGateway;
-import main.java.edu.umassmed.omega.omero.commons.data.OmeroDataWrapper;
-import main.java.edu.umassmed.omega.omero.commons.data.OmeroDatasetWrapper;
-import main.java.edu.umassmed.omega.omero.commons.data.OmeroExperimenterWrapper;
-import main.java.edu.umassmed.omega.omero.commons.data.OmeroProjectWrapper;
-import main.java.edu.umassmed.omega.omero.commons.runnable.OmeroListPanelProjectAndDatasetLoader;
+import edu.umassmed.omega.commons.OmegaLogFileManager;
+import edu.umassmed.omega.commons.data.coreElements.OmegaDataset;
+import edu.umassmed.omega.commons.data.coreElements.OmegaImage;
+import edu.umassmed.omega.commons.eventSystem.events.OmegaMessageEvent;
+import edu.umassmed.omega.commons.gui.GenericPanel;
+import edu.umassmed.omega.commons.gui.checkboxTree.CheckBoxNode;
+import edu.umassmed.omega.commons.gui.checkboxTree.CheckBoxNodeEditor;
+import edu.umassmed.omega.commons.gui.checkboxTree.CheckBoxNodeRenderer;
+import edu.umassmed.omega.commons.gui.checkboxTree.CheckBoxStatus;
+import edu.umassmed.omega.omero.commons.OmeroGateway;
+import edu.umassmed.omega.omero.commons.data.OmeroDataWrapper;
+import edu.umassmed.omega.omero.commons.data.OmeroDatasetWrapper;
+import edu.umassmed.omega.omero.commons.data.OmeroExperimenterWrapper;
+import edu.umassmed.omega.omero.commons.data.OmeroProjectWrapper;
+import edu.umassmed.omega.omero.commons.runnable.OmeroListPanelProjectAndDatasetLoader;
 import pojos.DatasetData;
 import pojos.ExperimenterData;
 import pojos.ProjectData;
@@ -524,7 +524,7 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 		int imagesLoaded = 0;
 		for (final OmegaImage img : this.loadedImages) {
 			for (final OmegaDataset dataset : img.getParentDatasets())
-				if (dataset.getElementID() == datasetID) {
+				if (dataset.getOmeroId() == datasetID) {
 					imagesLoaded++;
 					break;
 				}

@@ -1,6 +1,6 @@
-package main.java.edu.umassmed.omega.omero.commons.gui;
+package edu.umassmed.omega.omero.commons.gui;
 
-import main.java.edu.umassmed.omega.commons.constants.OmegaConstantsMathSymbols;
+import edu.umassmed.omega.commons.constants.OmegaConstantsMathSymbols;
 
 public class OmeroPluginGUIConstants {
 	public static final String MENU_CONNECTION = "Connection";

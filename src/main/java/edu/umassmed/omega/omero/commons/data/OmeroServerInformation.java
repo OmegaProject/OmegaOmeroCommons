@@ -1,6 +1,6 @@
-package main.java.edu.umassmed.omega.omero.commons.data;
+package edu.umassmed.omega.omero.commons.data;
 
-import main.java.edu.umassmed.omega.commons.data.imageDBConnectionElements.OmegaServerInformation;
+import edu.umassmed.omega.commons.data.imageDBConnectionElements.OmegaServerInformation;
 
 public class OmeroServerInformation extends OmegaServerInformation {
 	

@@ -25,7 +25,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package main.java.edu.umassmed.omega.omero.commons;
+package edu.umassmed.omega.omero.commons;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -41,10 +41,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
-import main.java.edu.umassmed.omega.commons.OmegaLogFileManager;
-import main.java.edu.umassmed.omega.commons.data.imageDBConnectionElements.OmegaGateway;
-import main.java.edu.umassmed.omega.commons.data.imageDBConnectionElements.OmegaLoginCredentials;
-import main.java.edu.umassmed.omega.commons.data.imageDBConnectionElements.OmegaServerInformation;
+import edu.umassmed.omega.commons.OmegaLogFileManager;
+import edu.umassmed.omega.commons.data.imageDBConnectionElements.OmegaGateway;
+import edu.umassmed.omega.commons.data.imageDBConnectionElements.OmegaLoginCredentials;
+import edu.umassmed.omega.commons.data.imageDBConnectionElements.OmegaServerInformation;
 import omero.ServerError;
 import omero.client;
 import omero.api.IAdminPrx;

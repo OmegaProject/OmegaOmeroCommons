@@ -1,4 +1,4 @@
-package main.java.edu.umassmed.omega.omero.commons;
+package edu.umassmed.omega.omero.commons;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -9,20 +9,20 @@ import java.util.Set;
 
 import javax.swing.RootPaneContainer;
 
-import main.java.edu.umassmed.omega.commons.data.OmegaData;
-import main.java.edu.umassmed.omega.commons.data.coreElements.OmegaDataset;
-import main.java.edu.umassmed.omega.commons.data.coreElements.OmegaElement;
-import main.java.edu.umassmed.omega.commons.data.coreElements.OmegaExperimenter;
-import main.java.edu.umassmed.omega.commons.data.coreElements.OmegaExperimenterGroup;
-import main.java.edu.umassmed.omega.commons.data.coreElements.OmegaImage;
-import main.java.edu.umassmed.omega.commons.data.coreElements.OmegaImagePixels;
-import main.java.edu.umassmed.omega.commons.data.coreElements.OmegaProject;
-import main.java.edu.umassmed.omega.commons.data.imageDBConnectionElements.OmegaLoginCredentials;
-import main.java.edu.umassmed.omega.commons.gui.dialogs.GenericMessageDialog;
-import main.java.edu.umassmed.omega.omero.commons.data.OmeroExperimenterWrapper;
-import main.java.edu.umassmed.omega.omero.commons.data.OmeroGroupWrapper;
-import main.java.edu.umassmed.omega.omero.commons.data.OmeroImageWrapper;
-import main.java.edu.umassmed.omega.omero.commons.data.OmeroServerInformation;
+import edu.umassmed.omega.commons.data.OmegaData;
+import edu.umassmed.omega.commons.data.coreElements.OmegaDataset;
+import edu.umassmed.omega.commons.data.coreElements.OmegaElement;
+import edu.umassmed.omega.commons.data.coreElements.OmegaExperimenter;
+import edu.umassmed.omega.commons.data.coreElements.OmegaExperimenterGroup;
+import edu.umassmed.omega.commons.data.coreElements.OmegaImage;
+import edu.umassmed.omega.commons.data.coreElements.OmegaImagePixels;
+import edu.umassmed.omega.commons.data.coreElements.OmegaProject;
+import edu.umassmed.omega.commons.data.imageDBConnectionElements.OmegaLoginCredentials;
+import edu.umassmed.omega.commons.gui.dialogs.GenericMessageDialog;
+import edu.umassmed.omega.omero.commons.data.OmeroExperimenterWrapper;
+import edu.umassmed.omega.omero.commons.data.OmeroGroupWrapper;
+import edu.umassmed.omega.omero.commons.data.OmeroImageWrapper;
+import edu.umassmed.omega.omero.commons.data.OmeroServerInformation;
 import pojos.DatasetData;
 import pojos.ExperimenterData;
 import pojos.GroupData;
@@ -31,9 +31,9 @@ import pojos.PixelsData;
 import pojos.ProjectData;
 
 public class OmeroImporterUtilities {
-	
-	
-	public static OmeroExperimenterWrapper getExperimenterWrapper(OmeroGateway gateway) {
+
+	public static OmeroExperimenterWrapper getExperimenterWrapper(
+			final OmeroGateway gateway) {
 		OmeroExperimenterWrapper experimenter = null;
 		ExperimenterData experimenterData;
 		try {
@@ -46,9 +46,11 @@ public class OmeroImporterUtilities {
 		experimenter = new OmeroExperimenterWrapper(experimenterData);
 		return experimenter;
 	}
-	
-	public static List<OmeroGroupWrapper> getGroupWrapper(OmeroGateway gateway) {
-		List<OmeroGroupWrapper> groupsWrapperList = new ArrayList<OmeroGroupWrapper>();
+
+	public static List<OmeroGroupWrapper> getGroupWrapper(
+			final OmeroGateway gateway) {
+		final List<OmeroGroupWrapper> groupsWrapperList = new
+				ArrayList<OmeroGroupWrapper>();
 		List<GroupData> groupsData;
 		try {
 			groupsData = gateway.getGroups();
@@ -58,33 +60,36 @@ public class OmeroImporterUtilities {
 			return null;
 		}// experimenterData.getGroups();
 		for (final GroupData groupData : groupsData) {
-			OmeroGroupWrapper wrapper = new OmeroGroupWrapper(groupData);
+			final OmeroGroupWrapper wrapper = new OmeroGroupWrapper(groupData);
 			groupsWrapperList.add(wrapper);
 		}
 		return groupsWrapperList;
 	}
-	
-	public static Map<OmeroGroupWrapper, List<OmeroExperimenterWrapper>> getGroupLeaders(List<OmeroGroupWrapper> groupWrapperList) {
-		Map<OmeroGroupWrapper, List<OmeroExperimenterWrapper>> groupLeadersMap = new LinkedHashMap<OmeroGroupWrapper, List<OmeroExperimenterWrapper>>();
+
+	public static Map<OmeroGroupWrapper, List<OmeroExperimenterWrapper>>  getGroupLeaders(
+			final List<OmeroGroupWrapper> groupWrapperList) {
+		final Map<OmeroGroupWrapper, List<OmeroExperimenterWrapper>>
+		groupLeadersMap = new LinkedHashMap<OmeroGroupWrapper,
+		List<OmeroExperimenterWrapper>>();
 
 		for (final OmeroGroupWrapper groupDataWrapper : groupWrapperList) {
-			List<OmeroExperimenterWrapper> leaderWrapperList = new ArrayList<OmeroExperimenterWrapper>();
-			GroupData groupData = groupDataWrapper.getGroupData();
+			final List<OmeroExperimenterWrapper> leaderWrapperList = new
+					ArrayList<OmeroExperimenterWrapper>();
+			final GroupData groupData = groupDataWrapper.getGroupData();
 
 			final Set<ExperimenterData> leadersData = groupData.getLeaders();
 
 			for (final ExperimenterData leaderData : leadersData) {
-				final OmeroExperimenterWrapper leaderWrapper = new OmeroExperimenterWrapper(
-						leaderData);
+				final OmeroExperimenterWrapper leaderWrapper = new
+						OmeroExperimenterWrapper(
+								leaderData);
 				leaderWrapperList.add(leaderWrapper);
 			}
 			groupLeadersMap.put(groupDataWrapper, leaderWrapperList);
-		}		
+		}
 		return groupLeadersMap;
 	}
-	
-	
-	
+
 	public static OmegaExperimenter getExperimenter(final OmeroGateway gateway) {
 		OmegaExperimenter experimenter = null;
 		ExperimenterData experimenterData;
@@ -95,13 +100,15 @@ public class OmeroImporterUtilities {
 			ex.printStackTrace();
 			return null;
 		}
-		experimenter = new OmegaExperimenter(experimenterData.getId(),
-				experimenterData.getFirstName(), experimenterData.getLastName());
+		experimenter = new OmegaExperimenter(experimenterData.getFirstName(),
+				experimenterData.getLastName());
+		experimenter.setOmeroId(experimenterData.getId());
 		return experimenter;
 	}
 
-	public static boolean loadAndAddGroups(final OmegaExperimenter experimenter,
-			final OmeroGateway gateway, final OmegaData omegaData) {
+	public static boolean loadAndAddGroups(
+			final OmegaExperimenter experimenter, final OmeroGateway gateway,
+			final OmegaData omegaData) {
 		boolean dataChanged = false;
 		List<GroupData> groupsData;
 		try {
@@ -113,11 +120,11 @@ public class OmeroImporterUtilities {
 		}
 
 		for (final GroupData groupData : groupsData) {
-			OmegaExperimenterGroup group = experimenter.getGroup(groupData
-					.getId());
+			OmegaExperimenterGroup group = omegaData.getExperimenterGroup(
+					groupData.getId(), true);
 
 			if (group != null) {
-				if (!experimenter.containsGroup(groupData.getId())) {
+				if (!experimenter.containsGroup(group)) {
 					experimenter.addGroup(group);
 					dataChanged = true;
 				}
@@ -129,18 +136,25 @@ public class OmeroImporterUtilities {
 			final Set<ExperimenterData> leadersData = groupData.getLeaders();
 			final List<OmegaExperimenter> leaders = new ArrayList<OmegaExperimenter>();
 			for (final ExperimenterData leaderData : leadersData) {
-				final OmegaExperimenter leader = new OmegaExperimenter(
-						leaderData.getId(), leaderData.getFirstName(),
-						leaderData.getLastName());
+				OmegaExperimenter leader = omegaData.getExperimenter(
+						leaderData.getId(), true);
+				if (leader == null) {
+					leader = new OmegaExperimenter(leaderData.getFirstName(),
+							leaderData.getLastName());
+					leader.setOmeroId(leaderData.getId());
+				}
 				leaders.add(leader);
 			}
 
-			group = new OmegaExperimenterGroup(groupData.getId(), leaders);
+			group = new OmegaExperimenterGroup(leaders);
+			group.setOmeroId(groupData.getId());
 			omegaData.addExperimenterGroup(group);
 			experimenter.addGroup(group);
 
 			for (final OmegaExperimenter leader : leaders) {
-				leader.addGroup(group);
+				if (!leader.containsGroup(group)) {
+					leader.addGroup(group);
+				}
 				omegaData.addExperimenter(leader);
 			}
 		}
@@ -148,7 +162,7 @@ public class OmeroImporterUtilities {
 	}
 
 	public static OmegaExperimenter loadAndAddExperimenterAndGroups(
-	        final OmeroGateway gateway, final OmegaData omegaData) {
+			final OmeroGateway gateway, final OmegaData omegaData) {
 		ExperimenterData experimenterData;
 		try {
 			experimenterData = gateway.getExperimenter();
@@ -170,19 +184,28 @@ public class OmeroImporterUtilities {
 		final List<OmegaExperimenterGroup> groups = new ArrayList<OmegaExperimenterGroup>();
 		for (final GroupData groupData : groupsData) {
 
-			OmegaExperimenterGroup group = omegaData
-			        .getExperimenterGroup(groupData.getId());
+			OmegaExperimenterGroup group = omegaData.getExperimenterGroup(
+					groupData.getId(), true);
 
 			final Set<ExperimenterData> leadersData = groupData.getLeaders();
 
 			if (group != null) {
 				for (final ExperimenterData leaderData : leadersData) {
-					if (!group.containsLeader(leaderData.getId())) {
-						final OmegaExperimenter leader = new OmegaExperimenter(
-						        leaderData.getId(), leaderData.getFirstName(),
-						        leaderData.getLastName());
+					// if (group.containsLeader(leaderData.getId(), true)) {
+					// continue;
+					// }
+					OmegaExperimenter leader = omegaData.getExperimenter(
+							leaderData.getId(), true);
+					if (leader == null) {
+						leader = new OmegaExperimenter(
+								leaderData.getFirstName(),
+								leaderData.getLastName());
+						leader.setOmeroId(leaderData.getId());
+					}
+					if (!group.containsLeader(leader)) {
 						group.addLeader(leader);
 					}
+
 				}
 				groups.add(group);
 				continue;
@@ -191,17 +214,20 @@ public class OmeroImporterUtilities {
 			final List<OmegaExperimenter> leaders = new ArrayList<OmegaExperimenter>();
 			for (final ExperimenterData leaderData : leadersData) {
 				final OmegaExperimenter leader = new OmegaExperimenter(
-				        leaderData.getId(), leaderData.getFirstName(),
-				        leaderData.getLastName());
+						leaderData.getFirstName(), leaderData.getLastName());
+				leader.setOmeroId(leaderData.getId());
 				leaders.add(leader);
 			}
 
-			group = new OmegaExperimenterGroup(groupData.getId(), leaders);
+			group = new OmegaExperimenterGroup(leaders);
+			group.setOmeroId(groupData.getId());
 			groups.add(group);
 			omegaData.addExperimenterGroup(group);
 
 			for (final OmegaExperimenter leader : leaders) {
-				leader.addGroup(group);
+				if (!leader.containsGroup(group)) {
+					leader.addGroup(group);
+				}
 				omegaData.addExperimenter(leader);
 			}
 		}
@@ -209,8 +235,9 @@ public class OmeroImporterUtilities {
 		// Create the actual user with his groups
 		// Add it to the main data
 		final OmegaExperimenter experimenter = new OmegaExperimenter(
-		        experimenterData.getId(), experimenterData.getFirstName(),
-		        experimenterData.getLastName(), groups);
+				experimenterData.getFirstName(),
+				experimenterData.getLastName(), groups);
+		experimenter.setOmeroId(experimenterData.getId());
 		omegaData.addExperimenter(experimenter);
 		return experimenter;
 	}
@@ -225,15 +252,15 @@ public class OmeroImporterUtilities {
 			ex.printStackTrace();
 			return null;
 		}
-		final OmegaExperimenter experimenter = omegaData
-		        .getExperimenter(experimenterData.getId());
+		final OmegaExperimenter experimenter = omegaData.getExperimenter(
+				experimenterData.getId(), true);
 		return experimenter;
 	}
 
 	public static boolean loadAndAddData(final OmeroImageWrapper imageWrapper,
-	        final OmegaExperimenter experimenter, final OmeroGateway gateway,
-	        final OmegaData omegaData, final boolean hasToSelect,
-	        final List<OmegaElement> loadedElements, final boolean dataChanged) {
+			final OmeroGateway gateway, final OmegaData omegaData,
+			final boolean hasToSelect, final List<OmegaElement> loadedElements,
+			final boolean dataChanged) {
 		boolean loadDataChanged = dataChanged;
 		final ProjectData projectData = imageWrapper.getProjectData();
 		final DatasetData datasetData = imageWrapper.getDatasetData();
@@ -242,9 +269,9 @@ public class OmeroImporterUtilities {
 		// TODO introdurre controlli se project/dataset/image gia
 		// presenti
 
-		OmegaProject project = omegaData.getProject(projectData.getId());
-		OmegaDataset dataset = omegaData.getDataset(datasetData.getId());
-		OmegaImage image = omegaData.getImage(imageData.getId());
+		OmegaProject project = omegaData.getProject(projectData.getId(), true);
+		OmegaDataset dataset = omegaData.getDataset(datasetData.getId(), true);
+		OmegaImage image = omegaData.getImage(imageData.getId(), true);
 
 		// final List<Long> ids = new ArrayList<Long>();
 		// ids.add(imageData.getId());
@@ -261,16 +288,18 @@ public class OmeroImporterUtilities {
 		}
 
 		for (final PixelsData pixelsData : imageData.getAllPixels()) {
-			if ((image != null) && image.containsPixels(pixelsData.getId())) {
+			if ((image != null)
+					&& image.containsPixels(pixelsData.getId(), true)) {
 				continue;
 			}
 
 			final OmegaImagePixels pixels = new OmegaImagePixels(
-					pixelsData.getId(), pixelsData.getPixelType(),
-					pixelsData.getSizeX(), pixelsData.getSizeY(),
-					pixelsData.getSizeZ(), pixelsData.getSizeC(),
-					pixelsData.getSizeT(), pixelsData.getPixelSizeX(),
-					pixelsData.getPixelSizeY(), pixelsData.getPixelSizeZ());
+					pixelsData.getPixelType(), pixelsData.getSizeX(),
+					pixelsData.getSizeY(), pixelsData.getSizeZ(),
+					pixelsData.getSizeC(), pixelsData.getSizeT(),
+					pixelsData.getPixelSizeX(), pixelsData.getPixelSizeY(),
+					pixelsData.getPixelSizeZ());
+			pixels.setOmeroId(pixelsData.getId());
 			final int defaultZ = gateway.getDefaultZ(pixelsData.getId());
 			pixels.setSelectedZ(defaultZ);
 			for (int i = 0; i < pixelsData.getSizeC(); i++) {
@@ -281,16 +310,26 @@ public class OmeroImporterUtilities {
 
 		// Create image
 		if (image == null) {
+			final ExperimenterData expData = imageData.getOwner();
+			OmegaExperimenter exp = omegaData.getExperimenter(expData.getId(),
+					true);
+			if (exp == null) {
+				exp = new OmegaExperimenter(expData.getFirstName(),
+						expData.getLastName());
+				exp.setOmeroId(expData.getId());
+			}
 			final Date acquisitionDate = new Date(imageData
 					.getAcquisitionDate().getTime());
 			final Date importedDate = new Date(imageData.getInserted()
 					.getTime());
-			image = new OmegaImage(imageData.getId(), imageData.getName(),
-					experimenter, acquisitionDate, importedDate, pixelsList);
+			// put exp instead of experimenter
+			image = new OmegaImage(imageData.getName(), exp, acquisitionDate,
+					importedDate, pixelsList);
+			image.setOmeroId(imageData.getId());
 			loadDataChanged = true;
 		} else {
 			for (final OmegaImagePixels pixels : pixelsList) {
-				if (!image.containsPixels(pixels.getElementID())) {
+				if (!image.containsPixels(pixels.getOmeroId(), true)) {
 					image.addPixels(pixels);
 				}
 			}
@@ -308,15 +347,15 @@ public class OmeroImporterUtilities {
 		if (dataset == null) {
 			final List<OmegaImage> images = new ArrayList<OmegaImage>();
 			images.add(image);
-			dataset = new OmegaDataset(datasetData.getId(),
-					datasetData.getName(), images);
+			dataset = new OmegaDataset(datasetData.getName(), images);
+			dataset.setOmeroId(datasetData.getId());
 			image.addParentDataset(dataset);
 			loadDataChanged = true;
 		} else {
 			if (!image.getParentDatasets().contains(dataset)) {
 				image.addParentDataset(dataset);
 			}
-			if (!dataset.containsImage(image.getElementID())) {
+			if (!dataset.containsImage(image.getOmeroId(), true)) {
 				dataset.addImage(image);
 				loadDataChanged = true;
 			}
@@ -330,12 +369,12 @@ public class OmeroImporterUtilities {
 			// Create project
 			final List<OmegaDataset> datasets = new ArrayList<OmegaDataset>();
 			datasets.add(dataset);
-			project = new OmegaProject(projectData.getId(),
-					projectData.getName(), datasets);
+			project = new OmegaProject(projectData.getName(), datasets);
+			project.setOmeroId(projectData.getId());
 			omegaData.addProject(project);
 			loadDataChanged = true;
 		} else {
-			if (!project.containsDataset(dataset.getElementID())) {
+			if (!project.containsDataset(dataset.getOmeroId(), true)) {
 				project.addDataset(dataset);
 				loadDataChanged = true;
 			}
@@ -349,15 +388,15 @@ public class OmeroImporterUtilities {
 	}
 
 	public static void connectToGateway(final RootPaneContainer container,
-	        final OmeroGateway gateway, final String host, final int port,
-	        final String username, final String psw) {
+			final OmeroGateway gateway, final String host, final int port,
+			final String username, final String psw) {
 		final int error = gateway.connect(new OmegaLoginCredentials(username,
-		        psw), new OmeroServerInformation(host, port));
+				psw), new OmeroServerInformation(host, port));
 		OmeroImporterUtilities.handleConnectionError(container, error);
 	}
 
 	public static void handleConnectionError(final RootPaneContainer container,
-	        final int error) {
+			final int error) {
 		String errorMsg = null;
 		switch (error) {
 		case 0:
@@ -382,7 +421,7 @@ public class OmeroImporterUtilities {
 		}
 		if (errorMsg != null) {
 			final GenericMessageDialog errorDialog = new GenericMessageDialog(
-			        container, "Omero server connection error", errorMsg, true);
+					container, "Omero server connection error", errorMsg, true);
 			errorDialog.enableClose();
 			errorDialog.setVisible(true);
 		}

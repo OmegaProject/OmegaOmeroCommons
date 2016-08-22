@@ -1,10 +1,10 @@
-package main.java.edu.umassmed.omega.omero.commons.gui;
+package edu.umassmed.omega.omero.commons.gui;
 
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.RootPaneContainer;
 
-import main.java.edu.umassmed.omega.commons.gui.GenericPanel;
+import edu.umassmed.omega.commons.gui.GenericPanel;
 
 public class OmeroOptionsPanel extends GenericPanel {
 

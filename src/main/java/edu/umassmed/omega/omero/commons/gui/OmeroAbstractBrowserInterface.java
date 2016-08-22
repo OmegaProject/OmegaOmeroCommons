@@ -1,8 +1,8 @@
-package main.java.edu.umassmed.omega.omero.commons.gui;
+package edu.umassmed.omega.omero.commons.gui;
 
-import main.java.edu.umassmed.omega.commons.gui.checkboxTree.CheckBoxStatus;
-import main.java.edu.umassmed.omega.commons.gui.interfaces.OmegaMessageDisplayerPanelInterface;
-import main.java.edu.umassmed.omega.omero.commons.data.OmeroDatasetWrapper;
+import edu.umassmed.omega.commons.gui.checkboxTree.CheckBoxStatus;
+import edu.umassmed.omega.commons.gui.interfaces.OmegaMessageDisplayerPanelInterface;
+import edu.umassmed.omega.omero.commons.data.OmeroDatasetWrapper;
 
 public interface OmeroAbstractBrowserInterface extends
         OmegaMessageDisplayerPanelInterface {

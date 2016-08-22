@@ -1,4 +1,4 @@
-package main.java.edu.umassmed.omega.omero.commons.data;
+package edu.umassmed.omega.omero.commons.data;
 
 public abstract class OmeroDataWrapper {
 
