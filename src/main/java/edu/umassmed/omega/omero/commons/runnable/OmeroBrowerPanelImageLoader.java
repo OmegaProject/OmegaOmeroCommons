@@ -3,9 +3,9 @@
  * Alessandro Rigano (Program in Molecular Medicine)
  * Caterina Strambio De Castillia (Program in Molecular Medicine)
  *
- * Created by the Open Microscopy Environment inteGrated Analysis (OMEGA) team: 
- * Alex Rigano, Caterina Strambio De Castillia, Jasmine Clark, Vanni Galli, 
- * Raffaello Giulietti, Loris Grossi, Eric Hunter, Tiziano Leidi, Jeremy Luban, 
+ * Created by the Open Microscopy Environment inteGrated Analysis (OMEGA) team:
+ * Alex Rigano, Caterina Strambio De Castillia, Jasmine Clark, Vanni Galli,
+ * Raffaello Giulietti, Loris Grossi, Eric Hunter, Tiziano Leidi, Jeremy Luban,
  * Ivo Sbalzarini and Mario Valle.
  *
  * Key contacts:
@@ -35,6 +35,9 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import pojos.DatasetData;
+import pojos.ImageData;
+import pojos.ProjectData;
 import edu.umassmed.omega.commons.OmegaLogFileManager;
 import edu.umassmed.omega.commons.constants.OmegaConstants;
 import edu.umassmed.omega.commons.constants.OmegaConstantsError;
@@ -44,9 +47,6 @@ import edu.umassmed.omega.omero.commons.OmeroGateway;
 import edu.umassmed.omega.omero.commons.data.OmeroDatasetWrapper;
 import edu.umassmed.omega.omero.commons.data.OmeroImageWrapper;
 import edu.umassmed.omega.omero.commons.data.OmeroThumbnailImageInfo;
-import pojos.DatasetData;
-import pojos.ImageData;
-import pojos.ProjectData;
 
 public class OmeroBrowerPanelImageLoader implements Runnable {
 
@@ -62,9 +62,9 @@ public class OmeroBrowerPanelImageLoader implements Runnable {
 	private final boolean loadThumb;
 
 	public OmeroBrowerPanelImageLoader(
-	        final OmegaMessageDisplayerPanelInterface displayerPanel,
-	        final OmeroGateway gateway, final OmeroDatasetWrapper datasetWrap,
-	        final boolean loadThumb) {
+			final OmegaMessageDisplayerPanelInterface displayerPanel,
+			final OmeroGateway gateway, final OmeroDatasetWrapper datasetWrap,
+			final boolean loadThumb) {
 		this.displayerPanel = displayerPanel;
 		this.gateway = gateway;
 
@@ -118,7 +118,7 @@ public class OmeroBrowerPanelImageLoader implements Runnable {
 			final ImageData imageData = this.images.get(i);
 
 			final OmeroImageWrapper image = new OmeroImageWrapper(imageData,
-			        this.projectData, this.datasetData);
+					this.projectData, this.datasetData);
 			this.imageWrapperList.add(image);
 
 			if (this.loadThumb) {
@@ -131,9 +131,9 @@ public class OmeroBrowerPanelImageLoader implements Runnable {
 
 				try {
 					bufferedImages = this.gateway.getThumbnailSet(pixelIDs,
-					        OmegaConstants.THUMBNAIL_SIZE);
+							OmegaConstants.THUMBNAIL_SIZE);
 					this.imageInfoList.add(new OmeroThumbnailImageInfo(image,
-					        bufferedImages.get(0)));
+							bufferedImages.get(0)));
 				} catch (final Exception ex) {
 					error = true;
 					OmegaLogFileManager.handleUncaughtException(ex);
@@ -145,8 +145,8 @@ public class OmeroBrowerPanelImageLoader implements Runnable {
 
 		if (error) {
 			JOptionPane.showMessageDialog(null,
-			        OmegaConstantsError.ERROR_LOADING_THE_DS,
-			        OmegaConstants.OMEGA_TITLE, JOptionPane.ERROR_MESSAGE);
+					OmegaConstantsError.ERROR_LOADING_THE_DS,
+					OmegaConstants.OMEGA_TITLE, JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 
@@ -155,30 +155,30 @@ public class OmeroBrowerPanelImageLoader implements Runnable {
 
 	private void updateLoadingStatus(final int currentlyLoading) {
 		final String loadingStatus = currentlyLoading + "/"
-		        + OmeroBrowerPanelImageLoader.this.imagesToLoad
-		        + " loaded image(s) for " + this.datasetData.getName();
+				+ OmeroBrowerPanelImageLoader.this.imagesToLoad
+				+ " image(s) displayed for " + this.datasetData.getName();
 		try {
 			SwingUtilities.invokeAndWait(new Runnable() {
 				@Override
 				public void run() {
 					if (OmeroBrowerPanelImageLoader.this.loadThumb) {
 						if (((OmeroBrowerPanelImageLoader.this.imagesLoaded % 10) == 0)
-						        || (OmeroBrowerPanelImageLoader.this.imagesLoaded == OmeroBrowerPanelImageLoader.this.imagesToLoad)) {
+								|| (OmeroBrowerPanelImageLoader.this.imagesLoaded == OmeroBrowerPanelImageLoader.this.imagesToLoad)) {
 							OmeroBrowerPanelImageLoader.this.displayerPanel
-							        .updateMessageStatus(new OmeroThumbnailMessageEvent(
-							                loadingStatus,
-							                OmeroBrowerPanelImageLoader.this.imageInfoList));
+							.updateMessageStatus(new OmeroThumbnailMessageEvent(
+									loadingStatus,
+									OmeroBrowerPanelImageLoader.this.imageInfoList));
 
 						} else {
 							OmeroBrowerPanelImageLoader.this.displayerPanel
-							        .updateMessageStatus(new OmegaMessageEvent(
-							                loadingStatus));
+							.updateMessageStatus(new OmegaMessageEvent(
+									loadingStatus));
 						}
 					} else {
 						OmeroBrowerPanelImageLoader.this.displayerPanel
-						        .updateMessageStatus(new OmeroWrapperMessageEvent(
-						                loadingStatus,
-						                OmeroBrowerPanelImageLoader.this.imageWrapperList));
+						.updateMessageStatus(new OmeroWrapperMessageEvent(
+								loadingStatus,
+								OmeroBrowerPanelImageLoader.this.imageWrapperList));
 					}
 				}
 			});
