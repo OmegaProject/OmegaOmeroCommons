@@ -315,19 +315,19 @@ public class OmeroGateway extends OmegaGateway {
 			this.entryEncrypted = this.secureClient.createSession(
 			        loginCred.getUserName(), loginCred.getPassword());
 		} catch (final CannotCreateSessionException ex) {
-			OmegaLogFileManager.handleUncaughtException(ex);
+			//OmegaLogFileManager.handleUncaughtException(ex);
 			error = 1;
 		} catch (final PermissionDeniedException ex) {
-			OmegaLogFileManager.handleUncaughtException(ex);
+			//OmegaLogFileManager.handleUncaughtException(ex);
 			error = 2;
 		} catch (final ServerError ex) {
-			OmegaLogFileManager.handleUncaughtException(ex);
+			//OmegaLogFileManager.handleUncaughtException(ex);
 			error = 3;
 		} catch (final DNSException ex) {
-			OmegaLogFileManager.handleUncaughtException(ex);
+			//OmegaLogFileManager.handleUncaughtException(ex);
 			error = 4;
 		} catch (final ConnectionRefusedException ex) {
-			OmegaLogFileManager.handleUncaughtException(ex);
+			//OmegaLogFileManager.handleUncaughtException(ex);
 			error = 5;
 		} catch (final Exception ex) {
 			OmegaLogFileManager.handleUncaughtException(ex);

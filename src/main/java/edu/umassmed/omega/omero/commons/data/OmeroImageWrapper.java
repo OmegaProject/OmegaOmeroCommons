@@ -29,6 +29,7 @@ package edu.umassmed.omega.omero.commons.data;
 
 import java.sql.Timestamp;
 
+import ome.model.units.BigResult;
 import pojos.DatasetData;
 import pojos.ImageData;
 import pojos.ProjectData;
@@ -40,7 +41,7 @@ public class OmeroImageWrapper extends OmeroDataWrapper {
 	private final ProjectData projectData;
 
 	public OmeroImageWrapper(final ImageData imageData,
-	        final ProjectData projectData, final DatasetData datasetData) {
+			final ProjectData projectData, final DatasetData datasetData) {
 		this.projectData = projectData;
 		this.datasetData = datasetData;
 		this.image = imageData;
@@ -71,27 +72,53 @@ public class OmeroImageWrapper extends OmeroDataWrapper {
 	public String getName() {
 		return this.image.getName();
 	}
-	
+
 	public Timestamp getAcquisitionDate() {
 		return this.image.getAcquisitionDate();
 	}
-	
+
 	public int getSizeT() {
 		return this.image.getDefaultPixels().getSizeT();
 	}
-	
+
 	public int getSizeX() {
 		return this.image.getDefaultPixels().getSizeX();
 	}
-	
+
 	public int getSizeY() {
 		return this.image.getDefaultPixels().getSizeY();
 	}
-	
+
+	public int getSizeC() {
+		return this.image.getDefaultPixels().getSizeC();
+	}
+
+	public int getSizeZ() {
+		return this.image.getDefaultPixels().getSizeZ();
+	}
+
+	public Double getPixelsSizeX() throws BigResult {
+		if (this.image.getDefaultPixels().getPixelSizeX(null) == null)
+			return null;
+		return this.image.getDefaultPixels().getPixelSizeX(null).getValue();
+	}
+
+	public Double getPixelsSizeY() throws BigResult {
+		if (this.image.getDefaultPixels().getPixelSizeY(null) == null)
+			return null;
+		return this.image.getDefaultPixels().getPixelSizeY(null).getValue();
+	}
+
+	public Double getPixelsSizeZ() throws BigResult {
+		if (this.image.getDefaultPixels().getPixelSizeZ(null) == null)
+			return null;
+		return this.image.getDefaultPixels().getPixelSizeZ(null).getValue();
+	}
+
 	public long getPixelsID() {
 		return this.image.getDefaultPixels().getId();
 	}
-	
+
 	public String getPixelType() {
 		return this.image.getDefaultPixels().getPixelType();
 	}

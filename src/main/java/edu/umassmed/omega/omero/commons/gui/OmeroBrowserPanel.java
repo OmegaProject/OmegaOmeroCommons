@@ -46,7 +46,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +60,7 @@ import javax.swing.RootPaneContainer;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
+import pojos.ImageData;
 import edu.umassmed.omega.commons.OmegaLogFileManager;
 import edu.umassmed.omega.commons.constants.OmegaConstants;
 import edu.umassmed.omega.commons.data.coreElements.OmegaImage;
@@ -73,7 +73,6 @@ import edu.umassmed.omega.omero.commons.data.OmeroDatasetWrapper;
 import edu.umassmed.omega.omero.commons.data.OmeroImageWrapper;
 import edu.umassmed.omega.omero.commons.data.OmeroThumbnailImageInfo;
 import edu.umassmed.omega.omero.commons.runnable.OmeroBrowerPanelImageLoader;
-import pojos.ImageData;
 
 public class OmeroBrowserPanel extends GenericPanel {
 	private static final long serialVersionUID = 7625488987526070516L;
@@ -102,9 +101,9 @@ public class OmeroBrowserPanel extends GenericPanel {
 
 	private List<OmeroThumbnailImageInfo> imagesInfo;
 
-	public Map<OmeroDatasetWrapper, List<OmeroImageWrapper>> getImagesToBeLoaded() {
-		return this.imageToBeLoadedList;
-	}
+	private OmeroBrowserList list;
+	private OmeroBrowserTable table;
+	private JScrollPane scrollPaneBrowser;
 
 	/**
 	 * Create a new instance of this JPanel.
@@ -161,13 +160,16 @@ public class OmeroBrowserPanel extends GenericPanel {
 
 		this.add(topPanel, BorderLayout.NORTH);
 
-		this.mainPanel = new JPanel();
-		this.mainPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
+		this.list = new OmeroBrowserList();
+		this.table = new OmeroBrowserTable();
+		// this.mainPanel = new JPanel();
+		// this.mainPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
 		// this.mainPanel.setDoubleBuffered(true);
-		this.mainPanel.setBackground(Color.white);
+		// this.mainPanel.setBackground(Color.white);
 
-		final JScrollPane scrollPaneBrowser = new JScrollPane(this.mainPanel);
-		this.add(scrollPaneBrowser, BorderLayout.CENTER);
+		// JScrollPane scrollPaneBrowser = new JScrollPane(this.mainPanel);
+		this.scrollPaneBrowser = new JScrollPane(this.list);
+		this.add(this.scrollPaneBrowser, BorderLayout.CENTER);
 	}
 
 	private void addListeners() {
@@ -175,16 +177,18 @@ public class OmeroBrowserPanel extends GenericPanel {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				OmeroBrowserPanel.this.isListView = false;
-				OmeroBrowserPanel.this.checkForResize();
-				OmeroBrowserPanel.this.redrawImagePanels();
+				OmeroBrowserPanel.this.setListView();
+				// OmeroBrowserPanel.this.checkForResize();
+				// OmeroBrowserPanel.this.redrawImagePanels();
 			}
 		});
 		this.listView_btt.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				OmeroBrowserPanel.this.isListView = true;
-				OmeroBrowserPanel.this.checkForResize();
-				OmeroBrowserPanel.this.redrawImagePanels();
+				OmeroBrowserPanel.this.setTableView();
+				// OmeroBrowserPanel.this.checkForResize();
+				// OmeroBrowserPanel.this.redrawImagePanels();
 			}
 		});
 		this.addComponentListener(new ComponentAdapter() {
@@ -194,6 +198,14 @@ public class OmeroBrowserPanel extends GenericPanel {
 				OmeroBrowserPanel.this.redrawImagePanels();
 			}
 		});
+	}
+
+	private void setListView() {
+		this.scrollPaneBrowser.setViewportView(this.list);
+	}
+
+	private void setTableView() {
+		this.scrollPaneBrowser.setViewportView(this.table);
 	}
 
 	private void setCheckboxStatus(final JPanel panel,
@@ -591,32 +603,37 @@ public class OmeroBrowserPanel extends GenericPanel {
 
 	private void createAndAddSingleImagePanels() {
 		if (this.imagesInfo == null) {
+			this.list.clear();
+			this.table.clear();
 			this.numberOfImages = 0;
 			return;
 		}
 
-		final Iterator<OmeroThumbnailImageInfo> iterator = this.imagesInfo
-				.iterator();
+		// final Iterator<OmeroThumbnailImageInfo> iterator = this.imagesInfo
+		// .iterator();
 
-		if (this.isListView) {
-			// this.mainPanel.setLayout(new GridLayout(this.numberOfImages, 1));
-			this.createAndAddListHeaderPanel();
-		} else {
-			// final int width = this.mainPanel.getWidth();
-			// final int imgPerRow = width / (OmegaConstants.THUMBNAIL_SIZE +
-			// 25);
-			// final int imgPerCol = this.numberOfImages / imgPerRow;
-			// this.mainPanel.setLayout(new GridLayout(imgPerCol, imgPerRow));
-		}
+		this.list.setElements(this.imagesInfo);
+		this.table.setElements(this.imagesInfo);
 
-		while (iterator.hasNext()) {
-			final OmeroThumbnailImageInfo temp = iterator.next();
-			if (!this.isListView) {
-				this.createAndAddSingleImagePreviewPanel(temp);
-			} else {
-				this.createAndAddSingleImageListPanel(temp);
-			}
-		}
+		// if (this.isListView) {
+		// // this.mainPanel.setLayout(new GridLayout(this.numberOfImages, 1));
+		// this.createAndAddListHeaderPanel();
+		// } else {
+		// // final int width = this.mainPanel.getWidth();
+		// // final int imgPerRow = width / (OmegaConstants.THUMBNAIL_SIZE +
+		// // 25);
+		// // final int imgPerCol = this.numberOfImages / imgPerRow;
+		// // this.mainPanel.setLayout(new GridLayout(imgPerCol, imgPerRow));
+		// }
+		//
+		// while (iterator.hasNext()) {
+		// final OmeroThumbnailImageInfo temp = iterator.next();
+		// if (!this.isListView) {
+		// this.createAndAddSingleImagePreviewPanel(temp);
+		// } else {
+		// this.createAndAddSingleImageListPanel(temp);
+		// }
+		// }
 	}
 
 	/**
@@ -648,11 +665,11 @@ public class OmeroBrowserPanel extends GenericPanel {
 	}
 
 	public void redrawImagePanels() {
-		this.checkboxList.clear();
-		this.mainPanel.removeAll();
+		// this.checkboxList.clear();
+		// this.mainPanel.removeAll();
 		this.createAndAddSingleImagePanels();
-		this.mainPanel.revalidate();
-		this.mainPanel.repaint();
+		// this.mainPanel.revalidate();
+		// this.mainPanel.repaint();
 	}
 
 	private void setNumberOfImages() {
@@ -664,54 +681,55 @@ public class OmeroBrowserPanel extends GenericPanel {
 	}
 
 	public void checkForResize() {
-		int numOfImagesPerRow = 1;
-		final int width = this.mainPanel.getWidth() - 25;
-		final int height = this.mainPanel.getHeight() - 25;
-		if (!this.isListView) {
-			final BigDecimal widthReal = new BigDecimal(width);
-			final BigDecimal thumbWidth = new BigDecimal(
-					OmegaConstants.THUMBNAIL_SIZE + 20);
-			numOfImagesPerRow = widthReal.divide(thumbWidth, 0,
-					RoundingMode.DOWN).intValue();
-		}
-		int numOfImagesPerCol = 0;
-		if (numOfImagesPerRow != 0) {
-			final BigDecimal val1 = new BigDecimal(this.numberOfImages);
-			final BigDecimal val2 = new BigDecimal(numOfImagesPerRow);
-			numOfImagesPerCol = val1.divide(val2, 0, RoundingMode.UP)
-					.intValue();
-		}
-
-		int dimX = width;
-		int offset = 20;
-		if (this.isListView) {
-			final int tempDimX = 900 + 20;
-			if (dimX < tempDimX) {
-				dimX = tempDimX;
-			}
-		} else {
-			if (numOfImagesPerRow != 0) {
-				dimX = numOfImagesPerRow
-						* (OmegaConstants.THUMBNAIL_SIZE + offset);
-			}
-			offset += 40;
-		}
-
-		int dimY = height;
-		if (numOfImagesPerCol != 0) {
-			dimY = (numOfImagesPerCol * (OmegaConstants.THUMBNAIL_SIZE + offset)) + 25;
-		}
-		final Dimension dim = new Dimension(dimX, dimY);
-		this.mainPanel.setSize(dim);
-		this.mainPanel.setPreferredSize(dim);
-		// if (this.getParentContainer() instanceof JInternalFrame) {
-		// final JInternalFrame intFrame = (JInternalFrame) this
-		// .getParentContainer();
-		// intFrame.repaint();
-		// } else {
-		// final JFrame frame = (JFrame) this.getParentContainer();
-		// frame.repaint();
+		// int numOfImagesPerRow = 1;
+		// final int width = this.mainPanel.getWidth() - 25;
+		// final int height = this.mainPanel.getHeight() - 25;
+		// if (!this.isListView) {
+		// final BigDecimal widthReal = new BigDecimal(width);
+		// final BigDecimal thumbWidth = new BigDecimal(
+		// OmegaConstants.THUMBNAIL_SIZE + 20);
+		// numOfImagesPerRow = widthReal.divide(thumbWidth, 0,
+		// RoundingMode.DOWN).intValue();
 		// }
+		// int numOfImagesPerCol = 0;
+		// if (numOfImagesPerRow != 0) {
+		// final BigDecimal val1 = new BigDecimal(this.numberOfImages);
+		// final BigDecimal val2 = new BigDecimal(numOfImagesPerRow);
+		// numOfImagesPerCol = val1.divide(val2, 0, RoundingMode.UP)
+		// .intValue();
+		// }
+		//
+		// int dimX = width;
+		// int offset = 20;
+		// if (this.isListView) {
+		// final int tempDimX = 900 + 20;
+		// if (dimX < tempDimX) {
+		// dimX = tempDimX;
+		// }
+		// } else {
+		// if (numOfImagesPerRow != 0) {
+		// dimX = numOfImagesPerRow
+		// * (OmegaConstants.THUMBNAIL_SIZE + offset);
+		// }
+		// offset += 40;
+		// }
+		//
+		// int dimY = height;
+		// if (numOfImagesPerCol != 0) {
+		// dimY = (numOfImagesPerCol * (OmegaConstants.THUMBNAIL_SIZE + offset))
+		// + 25;
+		// }
+		// final Dimension dim = new Dimension(dimX, dimY);
+		// this.mainPanel.setSize(dim);
+		// this.mainPanel.setPreferredSize(dim);
+		// // if (this.getParentContainer() instanceof JInternalFrame) {
+		// // final JInternalFrame intFrame = (JInternalFrame) this
+		// // .getParentContainer();
+		// // intFrame.repaint();
+		// // } else {
+		// // final JFrame frame = (JFrame) this.getParentContainer();
+		// // frame.repaint();
+		// // }
 	}
 
 	/**
@@ -782,5 +800,9 @@ public class OmeroBrowserPanel extends GenericPanel {
 
 	public void setGateway(final OmeroGateway gateway) {
 		this.gateway = gateway;
+	}
+
+	public Map<OmeroDatasetWrapper, List<OmeroImageWrapper>> getImagesToBeLoaded() {
+		return this.imageToBeLoadedList;
 	}
 }

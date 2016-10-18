@@ -26,6 +26,6 @@ public class OmeroPluginGUIConstants {
 	public static final String BROWSER_COLUMN_NAME_DIM_XY = "Dimensions (XY)";
 	public static final String BROWSER_COLUMN_NAME_DIM_ZTC = "Dimensions (ZTC)";
 	public static final String BROWSER_COLUMN_NAME_PIXELSIZES = "Pixel Size (XYZ) "
-	        + OmegaConstantsMathSymbols.MU + "u";
-	public static final String BROWSER_UNKNOWN = "Unknown";
+			+ OmegaConstantsMathSymbols.MU + "u";
+	public static final String BROWSER_UNKNOWN = "ND";
 }

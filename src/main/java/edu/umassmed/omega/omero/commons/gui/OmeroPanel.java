@@ -307,7 +307,9 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 			@Override
 			public void actionPerformed(final ActionEvent evt) {
 				try {
-					OmeroPanel.this.loadSelectedData();
+					//TODO this is a workaround need to find a proper fix
+					if(getGateway().isConnected())
+						OmeroPanel.this.loadSelectedData();
 				} catch (final ServerError ex) {
 					ex.printStackTrace();
 					return;
@@ -437,6 +439,14 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 	private void setBrowsingImages(
 	        final List<OmeroThumbnailImageInfo> imageInfoList) {
 		this.browserPanel.setImagesAndRecreatePanels(imageInfoList);
+	}
+	
+	public void updateStatus(String s) {
+		try {
+			this.statusPanel.updateStatus(0, s);
+		} catch (OmegaPluginExceptionStatusPanel ex) {
+			OmegaLogFileManager.handlePluginException(this.getPlugin(), ex);
+		}
 	}
 
 	@Override
