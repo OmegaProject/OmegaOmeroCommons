@@ -188,6 +188,11 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 		}
 
 		for (final GroupData group : groups) {
+			// if ((group.getName().equals("user"))
+			// || (group.getName().equals("system"))) {
+			if ((group.getId() == 0) || (group.getId() == 1)) {
+				continue;
+			}
 			final JMenu menuItem = new JMenu(group.getName());
 			List<ExperimenterData> exps;
 			try {
@@ -199,7 +204,7 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 			}
 			for (final ExperimenterData exp : exps) {
 				final JCheckBoxMenuItem subMenuItem = new JCheckBoxMenuItem(
-						exp.getFirstName() + " " + exp.getLastName());
+				        exp.getFirstName() + " " + exp.getLastName());
 				subMenuItem.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(final ActionEvent evt) {
@@ -307,9 +312,10 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 			@Override
 			public void actionPerformed(final ActionEvent evt) {
 				try {
-					//TODO this is a workaround need to find a proper fix
-					if(getGateway().isConnected())
+					// TODO this is a workaround need to find a proper fix
+					if (OmeroPanel.this.getGateway().isConnected()) {
 						OmeroPanel.this.loadSelectedData();
+					}
 				} catch (final ServerError ex) {
 					ex.printStackTrace();
 					return;
@@ -440,11 +446,11 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 	        final List<OmeroThumbnailImageInfo> imageInfoList) {
 		this.browserPanel.setImagesAndRecreatePanels(imageInfoList);
 	}
-	
-	public void updateStatus(String s) {
+
+	public void updateStatus(final String s) {
 		try {
 			this.statusPanel.updateStatus(0, s);
-		} catch (OmegaPluginExceptionStatusPanel ex) {
+		} catch (final OmegaPluginExceptionStatusPanel ex) {
 			OmegaLogFileManager.handlePluginException(this.getPlugin(), ex);
 		}
 	}
