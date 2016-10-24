@@ -34,7 +34,6 @@ import java.rmi.ServerError;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,30 +42,25 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.RootPaneContainer;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import pojos.DatasetData;
+import pojos.ExperimenterData;
+import pojos.ProjectData;
 import edu.umassmed.omega.commons.OmegaLogFileManager;
-import edu.umassmed.omega.commons.data.coreElements.OmegaDataset;
 import edu.umassmed.omega.commons.data.coreElements.OmegaImage;
 import edu.umassmed.omega.commons.eventSystem.events.OmegaMessageEvent;
 import edu.umassmed.omega.commons.gui.GenericPanel;
-import edu.umassmed.omega.commons.gui.checkboxTree.CheckBoxNode;
-import edu.umassmed.omega.commons.gui.checkboxTree.CheckBoxNodeEditor;
-import edu.umassmed.omega.commons.gui.checkboxTree.CheckBoxNodeRenderer;
-import edu.umassmed.omega.commons.gui.checkboxTree.CheckBoxStatus;
 import edu.umassmed.omega.omero.commons.OmeroGateway;
 import edu.umassmed.omega.omero.commons.data.OmeroDataWrapper;
 import edu.umassmed.omega.omero.commons.data.OmeroDatasetWrapper;
 import edu.umassmed.omega.omero.commons.data.OmeroExperimenterWrapper;
 import edu.umassmed.omega.omero.commons.data.OmeroProjectWrapper;
 import edu.umassmed.omega.omero.commons.runnable.OmeroListPanelProjectAndDatasetLoader;
-import pojos.DatasetData;
-import pojos.ExperimenterData;
-import pojos.ProjectData;
 
 public class OmeroTreeBrowserPanel extends GenericPanel {
 
@@ -77,48 +71,36 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 
 	private final List<OmegaImage> loadedImages;
 
-	// private final Map<ProjectData, List<DatasetData>> projDatasetsMap;
-	// private final Map<DatasetData, List<ImageData>> datasetImagesMap;
-
 	private OmeroGateway gateway;
 	private final OmeroAbstractBrowserInterface browserPanel;
 
-	// private final Map<DefaultMutableTreeNode, CheckBoxStatus> statusMap;
 	private final Map<String, OmeroDataWrapper> nodeMap;
 	private final DefaultMutableTreeNode root;
-	private CheckBoxNodeRenderer renderer;
-	private CheckBoxNodeEditor editor;
 
 	private JTree dataTree;
 
-	private boolean adjusting = false;
-
 	private final boolean isMultiSelection;
 
-	private OmeroDatasetWrapper actualSelection;
+	private List<OmeroProjectWrapper> expandedProjects;
+	private List<OmeroExperimenterWrapper> expandedExperimenter;
+	private OmeroDatasetWrapper currentSelection;
 
 	public OmeroTreeBrowserPanel(final RootPaneContainer parentContainer,
-			final OmeroAbstractBrowserInterface browserPanel,
-			final OmeroGateway gateway, final boolean isMultiSelection) {
+	        final OmeroAbstractBrowserInterface browserPanel,
+	        final OmeroGateway gateway, final boolean isMultiSelection) {
 		super(parentContainer);
 		this.isMultiSelection = isMultiSelection;
 
-		this.actualSelection = null;
+		this.currentSelection = null;
 		this.selectedDatasetList = new ArrayList<OmeroDatasetWrapper>();
 
 		this.expList = new ArrayList<OmeroExperimenterWrapper>();
 
 		this.loadedImages = new ArrayList<OmegaImage>();
-		// this.projDatasetsMap = new LinkedHashMap<ProjectData,
-		// List<DatasetData>>();
-		// this.datasetImagesMap = new LinkedHashMap<DatasetData,
-		// List<ImageData>>();
 
 		this.root = new DefaultMutableTreeNode();
 		this.root.setUserObject(OmeroPluginGUIConstants.TREE_TITLE);
 		this.nodeMap = new LinkedHashMap<String, OmeroDataWrapper>();
-		// statusMap = new LinkedHashMap<DefaultMutableTreeNode,
-		// CheckBoxStatus>();
 
 		this.setLayout(new BorderLayout());
 
@@ -129,19 +111,10 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 
 		this.gateway = gateway;
 		this.browserPanel = browserPanel;
-		// this.setPreferredSize(new Dimension(300, 200));
-		this.setLayout(new BorderLayout());
-		this.createAndAddWidgets();
-		this.addListeners();
 	}
 
 	public void createAndAddWidgets() {
 		this.dataTree = new JTree(this.root);
-		// this.dataTreeBrowser.setRootVisible(false);
-		this.renderer = new CheckBoxNodeRenderer();
-		this.editor = new CheckBoxNodeEditor();
-		this.dataTree.setCellRenderer(this.renderer);
-		this.dataTree.setCellEditor(this.editor);
 
 		this.dataTree.expandRow(0);
 		this.dataTree.setRootVisible(false);
@@ -149,43 +122,47 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 
 		final JScrollPane scrollPane = new JScrollPane(this.dataTree);
 		scrollPane.setBorder(new TitledBorder(
-				OmeroPluginGUIConstants.TREE_TITLE));
+		        OmeroPluginGUIConstants.TREE_TITLE));
 
 		this.add(scrollPane, BorderLayout.CENTER);
 	}
 
 	private void addListeners() {
-		this.dataTree.getModel().addTreeModelListener(new TreeModelListener() {
-			@Override
-			public void treeNodesChanged(final TreeModelEvent event) {
-				OmeroTreeBrowserPanel.this.handleTreeChanged(
-						event.getTreePath(), event.getChildren(),
-						(DefaultTreeModel) event.getSource());
-			}
-
-			@Override
-			public void treeNodesInserted(final TreeModelEvent e) {
-				// TODO Auto-generated method stub
-			}
-
-			@Override
-			public void treeNodesRemoved(final TreeModelEvent e) {
-				// TODO Auto-generated method stub
-			}
-
-			@Override
-			public void treeStructureChanged(final TreeModelEvent e) {
-				// TODO Auto-generated method stub
-			}
-		});
-
 		this.dataTree.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(final MouseEvent evt) {
 				OmeroTreeBrowserPanel.this.handleMouseClicked(evt.getX(),
-						evt.getY());
+				        evt.getY());
 			}
 		});
+		this.dataTree.addTreeSelectionListener(new TreeSelectionListener() {
+			@Override
+			public void valueChanged(final TreeSelectionEvent evt) {
+				OmeroTreeBrowserPanel.this.handleSelection();
+			}
+		});
+	}
+
+	private void handleSelection() {
+		this.selectedDatasetList.clear();
+		for (final TreePath path : OmeroTreeBrowserPanel.this.dataTree
+				.getSelectionPaths()) {
+			final DefaultMutableTreeNode node = (DefaultMutableTreeNode) path
+			        .getLastPathComponent();
+			final String s = node.toString();
+			final OmeroDataWrapper element = this.nodeMap.get(s);
+			if (element instanceof OmeroDatasetWrapper) {
+				this.selectedDatasetList.add((OmeroDatasetWrapper) element);
+			} else if (element instanceof OmeroProjectWrapper) {
+				this.selectedDatasetList.addAll(((OmeroProjectWrapper) element)
+				        .getDatasets());
+			} else if (element instanceof OmeroExperimenterWrapper) {
+				for (final OmeroProjectWrapper project : ((OmeroExperimenterWrapper) element)
+				        .getProjects()) {
+					this.selectedDatasetList.addAll(project.getDatasets());
+				}
+			}
+		}
 	}
 
 	private void handleMouseClicked(final int x, final int y) {
@@ -193,182 +170,41 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 		if (path == null)
 			return;
 		final DefaultMutableTreeNode node = (DefaultMutableTreeNode) path
-				.getLastPathComponent();
-		final CheckBoxNode check = (CheckBoxNode) node.getUserObject();
+		        .getLastPathComponent();
 		final String s = node.toString();
 		final OmeroDataWrapper element = this.nodeMap.get(s);
 		if (element instanceof OmeroDatasetWrapper) {
 			final OmeroDatasetWrapper datasetWrapper = (OmeroDatasetWrapper) element;
-			if (this.actualSelection != datasetWrapper) {
-				this.actualSelection = datasetWrapper;
+			if (this.currentSelection != datasetWrapper) {
+				this.currentSelection = datasetWrapper;
 				this.browserPanel.browseDataset(datasetWrapper);
 			}
-			this.browserPanel.updateImagesSelection(check.getStatus());
+			this.browserPanel.updateImagesSelection();
 		}
-	}
-
-	private void handleTreeChanged(final TreePath parent,
-			final Object[] children, final DefaultTreeModel model) {
-		if (this.adjusting)
-			return;
-		this.adjusting = true;
-
-		DefaultMutableTreeNode node = null;
-		CheckBoxNode c = null; // = (CheckBoxNode)node.getUserObject();
-		if ((children != null) && (children.length == 1)) {
-			node = (DefaultMutableTreeNode) children[0];
-			c = (CheckBoxNode) node.getUserObject();
-			if (!this.isMultiSelection) {
-				c.setStatus(CheckBoxStatus.DESELECTED);
-				this.updateAllChildrenUserObject(node, c.getStatus());
-				this.adjusting = false;
-				return;
-			}
-			DefaultMutableTreeNode n = (DefaultMutableTreeNode) parent
-					.getLastPathComponent();
-			if (true /* optionsPanel.isAutoSelectRelatives() */) {
-				while (n != null) {
-					this.updateParentUserObject(n);
-					final DefaultMutableTreeNode tmp = (DefaultMutableTreeNode) n
-							.getParent();
-					if (tmp == null) {
-						break;
-					} else {
-						n = tmp;
-					}
-				}
-			}
-			model.nodeChanged(n);
-		} else {
-			node = (DefaultMutableTreeNode) model.getRoot();
-			// c = (CheckBoxNode) node.getUserObject();
-		}
-		if ((c != null) && true/* optionsPanel.isAutoSelectRelatives() */) {
-			this.updateAllChildrenUserObject(node, c.getStatus());
-		}
-		// model.nodeChanged(node);
-
-		this.adjusting = false;
-
-		if (c == null)
-			return;
-
-		this.updateSelectedData(node, c.getStatus());
-	}
-
-	private void updateParentUserObject(final DefaultMutableTreeNode parent) {
-		if (parent.getUserObject() instanceof String)
-			return;
-		final String label = ((CheckBoxNode) parent.getUserObject()).getLabel();
-		int selectedCount = 0;
-		int indeterminateCount = 0;
-		final Enumeration children = parent.children();
-		while (children.hasMoreElements()) {
-			final DefaultMutableTreeNode node = (DefaultMutableTreeNode) children
-					.nextElement();
-			final CheckBoxNode check = (CheckBoxNode) node.getUserObject();
-			if (check.getStatus() == CheckBoxStatus.INDETERMINATE) {
-				indeterminateCount++;
-				break;
-			}
-			if (check.getStatus() == CheckBoxStatus.SELECTED) {
-				selectedCount++;
-			}
-		}
-		if (indeterminateCount > 0) {
-			parent.setUserObject(new CheckBoxNode(label));
-		} else if (selectedCount == 0) {
-			final CheckBoxStatus status = CheckBoxStatus.DESELECTED;
-			parent.setUserObject(new CheckBoxNode(label, status));
-			this.updateSelectedData(parent, status);
-		} else if (selectedCount == parent.getChildCount()) {
-			final CheckBoxStatus status = CheckBoxStatus.SELECTED;
-			parent.setUserObject(new CheckBoxNode(label, status));
-			this.updateSelectedData(parent, status);
-		} else {
-			parent.setUserObject(new CheckBoxNode(label));
-		}
-	}
-
-	private void updateAllChildrenUserObject(final DefaultMutableTreeNode root,
-			final CheckBoxStatus status) {
-		final Enumeration breadth = root.breadthFirstEnumeration();
-		while (breadth.hasMoreElements()) {
-			final DefaultMutableTreeNode node = (DefaultMutableTreeNode) breadth
-					.nextElement();
-			if (root == node) {
-				continue;
-			}
-			final CheckBoxNode check = (CheckBoxNode) node.getUserObject();
-			node.setUserObject(new CheckBoxNode(check.getLabel(), status));
-
-			this.updateSelectedData(node, status);
-
-			final OmeroDataWrapper wrap = this.nodeMap.get(check.getLabel());
-			if (wrap == this.actualSelection) {
-				OmeroTreeBrowserPanel.this.browserPanel
-				.updateImagesSelection(status);
-			}
-		}
-	}
-
-	private DefaultMutableTreeNode getActualNode() {
-		final Enumeration children = this.root.breadthFirstEnumeration();
-		while (children.hasMoreElements()) {
-			final DefaultMutableTreeNode node = (DefaultMutableTreeNode) children
-					.nextElement();
-			if (node.getUserObject() instanceof CheckBoxNode) {
-				final CheckBoxNode check = (CheckBoxNode) node.getUserObject();
-				if (check.getLabel().equals(
-						this.actualSelection.getStringRepresentation()))
-					return node;
-			}
-		}
-		return null;
-	}
-
-	private void updateSelectedData(final DefaultMutableTreeNode node,
-			final CheckBoxStatus status) {
-		final String s = node.toString();
-		final OmeroDataWrapper element = this.nodeMap.get(s);
-		// TODO modify to consider different cases and loaded relative images
-		// when needed
-		if (element instanceof OmeroDatasetWrapper) {
-			final OmeroDatasetWrapper datasetWrapper = (OmeroDatasetWrapper) element;
-			if (status == CheckBoxStatus.SELECTED) {
-				this.selectedDatasetList.add(datasetWrapper);
-			} else if (status == CheckBoxStatus.DESELECTED) {
-				this.selectedDatasetList.remove(datasetWrapper);
-			}
-		}
-		// FIXME
-		// this.browserPanel.fireDataChangedEvent();
 	}
 
 	public void resetExperimenterData() {
 		this.expList.clear();
-		// this.projDatasetsMap.clear();
-		// this.datasetImagesMap.clear();
 	}
 
 	public void addExperimenterData(final ExperimenterData experimenterData)
-			throws ServerError {
+	        throws ServerError {
 		this.browserPanel.updateMessageStatus(new OmegaMessageEvent(
-				OmeroPluginGUIConstants.LOADING_PROJECT_AND_DATASET));
+		        OmeroPluginGUIConstants.LOADING_PROJECT_AND_DATASET));
 		final OmeroListPanelProjectAndDatasetLoader loader = new OmeroListPanelProjectAndDatasetLoader(
-				this.browserPanel, this.gateway, experimenterData);
+		        this.browserPanel, this.gateway, experimenterData);
 		final Thread t = new Thread(loader);
 		t.setName(loader.getClass().getSimpleName()
-		        + OmeroListPanelProjectAndDatasetLoader.getCounter());
+				+ OmeroListPanelProjectAndDatasetLoader.getCounter());
 		OmegaLogFileManager.registerAsExceptionHandlerOnThread(t);
 		t.start();
 	}
 
 	public void updateOmeData(final ExperimenterData expData,
-			final Map<ProjectData, List<DatasetData>> datas) {
+	        final Map<ProjectData, List<DatasetData>> datas) {
 
 		final OmeroExperimenterWrapper expWrapper = new OmeroExperimenterWrapper(
-				expData);
+		        expData);
 
 		final List<ProjectData> projects = new ArrayList<>(datas.keySet());
 		Collections.sort(projects, new Comparator<ProjectData>() {
@@ -394,6 +230,7 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 	}
 
 	public void removeExperimenterData(final ExperimenterData experimenterData) {
+		// TODO remove projects / dataset from list
 		OmeroExperimenterWrapper omeExpToRemove = null;
 		for (final OmeroExperimenterWrapper omeExp : this.expList) {
 			if (omeExp.getID() == experimenterData.getId()) {
@@ -402,74 +239,41 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 			}
 		}
 		this.expList.remove(omeExpToRemove);
+		this.updateTree();
 	}
 
 	public void updateTree() {
 		this.dataTree.setRootVisible(true);
 
 		String s = null;
-		CheckBoxStatus status = null;
 		this.root.removeAllChildren();
-		this.resetDisabledNodesList();
 
 		((DefaultTreeModel) this.dataTree.getModel()).reload();
 		this.nodeMap.clear();
-		// this.statusMap.clear();
 
 		for (final OmeroExperimenterWrapper expWrapper : this.expList) {
-			final int numOfProjects = expWrapper.getNumOfProjects();
-			int projectsCounter = 0;
 			final List<OmeroProjectWrapper> projects = expWrapper.getProjects();
 			final DefaultMutableTreeNode expNode = new DefaultMutableTreeNode();
 			for (final OmeroProjectWrapper projWrapper : projects) {
-				final int numOfDatasets = projWrapper.getNumOfDatasets();
-				int datasetsCounter = 0;
 				final List<OmeroDatasetWrapper> datasets = projWrapper
-						.getDatasets();
+				        .getDatasets();
 				final DefaultMutableTreeNode projectNode = new DefaultMutableTreeNode();
 				for (final OmeroDatasetWrapper datasetWrapper : datasets) {
-					final int numOfImages = datasetWrapper.getNumOfImages();
 					final DefaultMutableTreeNode datasetNode = new DefaultMutableTreeNode();
 					s = datasetWrapper.getStringRepresentation();
 					this.nodeMap.put(s, datasetWrapper);
-					if (this.isDatasetFullyLoaded(datasetWrapper.getID(),
-							numOfImages)) {
-						status = CheckBoxStatus.SELECTED;
-						this.addNodeToDisabledList(datasetNode);
-						datasetsCounter++;
-					} else {
-						status = this.selectedDatasetList
-								.contains(datasetWrapper) ? CheckBoxStatus.SELECTED
-										: CheckBoxStatus.DESELECTED;
-					}
-					datasetNode.setUserObject(new CheckBoxNode(s, status));
-					// statusMap.put(datasetNode, status);
+					datasetNode.setUserObject(s);
 					projectNode.add(datasetNode);
-				}
-				if (datasetsCounter == numOfDatasets) {
-					status = CheckBoxStatus.SELECTED;
-					this.addNodeToDisabledList(projectNode);
-					projectsCounter++;
-				} else {
-					status = CheckBoxStatus.DESELECTED;
 				}
 				s = projWrapper.getStringRepresentation();
 				this.nodeMap.put(s, projWrapper);
-				projectNode.setUserObject(new CheckBoxNode(s, status));
+				projectNode.setUserObject(s);
 				expNode.add(projectNode);
-				// statusMap.put(projectNode, status);
-			}
-			if (projectsCounter == numOfProjects) {
-				status = CheckBoxStatus.SELECTED;
-				this.addNodeToDisabledList(expNode);
-			} else {
-				status = CheckBoxStatus.DESELECTED;
 			}
 			s = expWrapper.getStringRepresentation();
 			this.nodeMap.put(s, expWrapper);
-			expNode.setUserObject(new CheckBoxNode(s, status));
+			expNode.setUserObject(s);
 			this.root.add(expNode);
-			// statusMap.put(expNode, status);
 		}
 
 		this.dataTree.expandRow(0);
@@ -479,59 +283,6 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 
 	public List<OmeroDatasetWrapper> getSelectedDatasets() {
 		return this.selectedDatasetList;
-	}
-
-	public void updateDatasetSelection(final int selectedImages) {
-		final DefaultMutableTreeNode actualNode = this.getActualNode();
-		if (actualNode == null)
-			return;
-		// TODO throw error here
-		final CheckBoxNode check = (CheckBoxNode) actualNode.getUserObject();
-		final int maxImages = this.actualSelection.getDatasetData().getImages()
-				.size();
-		CheckBoxStatus status;
-		if (selectedImages == 0) {
-			status = CheckBoxStatus.DESELECTED;
-		} else if (selectedImages == maxImages) {
-			status = CheckBoxStatus.SELECTED;
-		} else {
-			status = CheckBoxStatus.INDETERMINATE;
-		}
-		actualNode.setUserObject(new CheckBoxNode(check.getLabel(), status));
-		DefaultMutableTreeNode parent = (DefaultMutableTreeNode) actualNode
-				.getParent();
-		while (parent != null) {
-			this.updateParentUserObject(parent);
-			parent = (DefaultMutableTreeNode) parent.getParent();
-		}
-
-		// this.updateAllChildrenUserObject(actualNode, status);
-		this.repaint();
-	}
-
-	private void resetDisabledNodesList() {
-		this.renderer.resetDisabledNodesList();
-		this.editor.resetDisabledNodesList();
-	}
-
-	private void addNodeToDisabledList(final DefaultMutableTreeNode node) {
-		this.renderer.addNodeToDisabledList(node);
-		this.editor.addNodeToDisabledList(node);
-	}
-
-	private boolean isDatasetFullyLoaded(final long datasetID,
-			final int datasetSize) {
-		int imagesLoaded = 0;
-		for (final OmegaImage img : this.loadedImages) {
-			for (final OmegaDataset dataset : img.getParentDatasets())
-				if (dataset.getOmeroId() == datasetID) {
-					imagesLoaded++;
-					break;
-				}
-		}
-		if (imagesLoaded == datasetSize)
-			return true;
-		return false;
 	}
 
 	public void updateLoadedElements(final List<OmegaImage> loadedImages) {

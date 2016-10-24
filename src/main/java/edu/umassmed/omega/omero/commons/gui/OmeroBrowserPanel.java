@@ -28,21 +28,12 @@
 package edu.umassmed.omega.omero.commons.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -51,23 +42,15 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.RootPaneContainer;
-import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
 
-import pojos.ImageData;
 import edu.umassmed.omega.commons.OmegaLogFileManager;
-import edu.umassmed.omega.commons.constants.OmegaConstants;
 import edu.umassmed.omega.commons.data.coreElements.OmegaImage;
 import edu.umassmed.omega.commons.eventSystem.events.OmegaMessageEvent;
 import edu.umassmed.omega.commons.gui.GenericPanel;
-import edu.umassmed.omega.commons.gui.checkboxTree.CheckBoxStatus;
-import edu.umassmed.omega.commons.utilities.OmegaStringUtilities;
 import edu.umassmed.omega.omero.commons.OmeroGateway;
 import edu.umassmed.omega.omero.commons.data.OmeroDatasetWrapper;
 import edu.umassmed.omega.omero.commons.data.OmeroImageWrapper;
@@ -77,26 +60,19 @@ import edu.umassmed.omega.omero.commons.runnable.OmeroBrowerPanelImageLoader;
 public class OmeroBrowserPanel extends GenericPanel {
 	private static final long serialVersionUID = 7625488987526070516L;
 
-	private boolean isListView;
-
 	private final OmeroAbstractBrowserInterface browserPanel;
 	private OmeroGateway gateway;
 
 	private JPanel mainPanel;
 	private JRadioButton gridView_btt, listView_btt;
 
-	private int numberOfImages;
 	private Dimension panelSize;
 	private OmeroDatasetWrapper datasetWrapper;
-	private CheckBoxStatus datasetStatus;
 
-	private final List<JCheckBox> checkboxList;
-
-	private boolean updating;
+	private boolean updating, isListView;
 
 	private final boolean isMultiSelection;
 
-	private final Map<OmeroDatasetWrapper, List<OmeroImageWrapper>> imageToBeLoadedList;
 	private final List<OmegaImage> loadedImages;
 
 	private List<OmeroThumbnailImageInfo> imagesInfo;
@@ -109,37 +85,26 @@ public class OmeroBrowserPanel extends GenericPanel {
 	 * Create a new instance of this JPanel.
 	 */
 	public OmeroBrowserPanel(final RootPaneContainer parentContainer,
-			final OmeroAbstractBrowserInterface browserPanel,
-			final OmeroGateway gateway, final boolean isMultiSelection) {
+	        final OmeroAbstractBrowserInterface browserPanel,
+	        final OmeroGateway gateway, final boolean isMultiSelection) {
 		super(parentContainer);
 
-		this.isListView = false;
 		this.updating = false;
+		this.isListView = true;
 		this.isMultiSelection = isMultiSelection;
 
-		this.datasetStatus = CheckBoxStatus.DESELECTED;
-
 		this.datasetWrapper = null;
-		this.imageToBeLoadedList = new LinkedHashMap<OmeroDatasetWrapper, List<OmeroImageWrapper>>();
 		this.loadedImages = new ArrayList<OmegaImage>();
-
-		this.checkboxList = new ArrayList<JCheckBox>();
 
 		this.browserPanel = browserPanel;
 
 		this.gateway = gateway;
-		// final Dimension d = new Dimension(400, 400);
-		// this.setSize(d);
-		// this.setPreferredSize(d);
 
 		this.setLayout(new BorderLayout());
-		// this.setBackground(Color.white);
 
 		this.createAndAddWidgets();
 
 		this.addListeners();
-
-		this.numberOfImages = 0;
 	}
 
 	private void createAndAddWidgets() {
@@ -148,10 +113,10 @@ public class OmeroBrowserPanel extends GenericPanel {
 
 		final ButtonGroup group = new ButtonGroup();
 		this.gridView_btt = new JRadioButton(
-				OmeroPluginGUIConstants.BROWSER_VIEW_GRID);
+		        OmeroPluginGUIConstants.BROWSER_VIEW_GRID);
 		this.gridView_btt.setSelected(true);
 		this.listView_btt = new JRadioButton(
-				OmeroPluginGUIConstants.BROWSER_LIST_GRID);
+		        OmeroPluginGUIConstants.BROWSER_LIST_GRID);
 		group.add(this.gridView_btt);
 		group.add(this.listView_btt);
 
@@ -160,14 +125,8 @@ public class OmeroBrowserPanel extends GenericPanel {
 
 		this.add(topPanel, BorderLayout.NORTH);
 
-		this.list = new OmeroBrowserList();
-		this.table = new OmeroBrowserTable();
-		// this.mainPanel = new JPanel();
-		// this.mainPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
-		// this.mainPanel.setDoubleBuffered(true);
-		// this.mainPanel.setBackground(Color.white);
-
-		// JScrollPane scrollPaneBrowser = new JScrollPane(this.mainPanel);
+		this.list = new OmeroBrowserList(this.isMultiSelection);
+		this.table = new OmeroBrowserTable(this.isMultiSelection);
 		this.scrollPaneBrowser = new JScrollPane(this.list);
 		this.add(this.scrollPaneBrowser, BorderLayout.CENTER);
 	}
@@ -176,464 +135,45 @@ public class OmeroBrowserPanel extends GenericPanel {
 		this.gridView_btt.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				OmeroBrowserPanel.this.isListView = false;
 				OmeroBrowserPanel.this.setListView();
-				// OmeroBrowserPanel.this.checkForResize();
-				// OmeroBrowserPanel.this.redrawImagePanels();
 			}
 		});
 		this.listView_btt.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				OmeroBrowserPanel.this.isListView = true;
 				OmeroBrowserPanel.this.setTableView();
-				// OmeroBrowserPanel.this.checkForResize();
-				// OmeroBrowserPanel.this.redrawImagePanels();
 			}
 		});
 		this.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(final ComponentEvent evt) {
-				OmeroBrowserPanel.this.checkForResize();
-				OmeroBrowserPanel.this.redrawImagePanels();
+				OmeroBrowserPanel.this.createAndAddSingleImagePanels();
 			}
 		});
 	}
 
 	private void setListView() {
+		this.isListView = true;
 		this.scrollPaneBrowser.setViewportView(this.list);
 	}
 
 	private void setTableView() {
+		this.isListView = false;
 		this.scrollPaneBrowser.setViewportView(this.table);
 	}
 
-	private void setCheckboxStatus(final JPanel panel,
-			final OmeroThumbnailImageInfo temp, final JCheckBox checked) {
-		if (this.isImageLoaded(temp.getImageID())) {
-			checked.setSelected(true);
-			checked.setEnabled(false);
-			panel.setEnabled(false);
-		} else {
-			if (this.datasetStatus == CheckBoxStatus.SELECTED) {
-				List<OmeroImageWrapper> imageWrapperList;
-				if (this.imageToBeLoadedList.containsKey(this.datasetWrapper)) {
-					imageWrapperList = this.imageToBeLoadedList
-							.get(this.datasetWrapper);
-					if (!imageWrapperList.contains(temp.getImage())) {
-						imageWrapperList.add(temp.getImage());
-					}
-				} else {
-					imageWrapperList = new ArrayList<OmeroImageWrapper>();
-					imageWrapperList.add(temp.getImage());
-				}
-				checked.setSelected(true);
-				this.imageToBeLoadedList.put(this.datasetWrapper,
-						imageWrapperList);
-			} else if (this.datasetStatus == CheckBoxStatus.DESELECTED) {
-				if (this.imageToBeLoadedList.containsKey(this.datasetWrapper)) {
-					this.imageToBeLoadedList.remove(this.datasetWrapper);
-				}
-			} else {
-				if (this.imageToBeLoadedList.containsKey(this.datasetWrapper)) {
-					final List<OmeroImageWrapper> imageWrapperList = this.imageToBeLoadedList
-							.get(this.datasetWrapper);
-					if (imageWrapperList.contains(temp.getImage())) {
-						checked.setSelected(true);
-					}
-				}
-			}
-		}
-	}
-
-	private void addCheckboxListener(final OmeroThumbnailImageInfo temp,
-			final JCheckBox checked) {
-		checked.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(final ItemEvent evt) {
-				OmeroBrowserPanel.this.handleStateChanged(temp, checked);
-			}
-		});
-	}
-
-	private void handleStateChanged(final OmeroThumbnailImageInfo temp,
-			final JCheckBox checked) {
-		if (OmeroBrowserPanel.this.updating)
-			return;
-		if (this.isMultiSelection) {
-			this.handleMultiSelectionStateChanged(temp, checked);
-		} else {
-			this.handleNoMultiSelectionStateChanged(temp, checked);
-		}
-	}
-
-	private void handleNoMultiSelectionStateChanged(
-			final OmeroThumbnailImageInfo temp, final JCheckBox checked) {
-		List<OmeroImageWrapper> imageWrapperList;
-		if (!checked.isSelected()) {
-			if (this.imageToBeLoadedList.containsKey(this.datasetWrapper)) {
-				imageWrapperList = this.imageToBeLoadedList
-						.get(this.datasetWrapper);
-				imageWrapperList.remove(temp.getImage());
-				if (imageWrapperList.isEmpty()) {
-					this.imageToBeLoadedList.remove(this.datasetWrapper);
-				}
-				this.browserPanel.updateDatasetSelection(imageWrapperList
-				        .size());
-			}
-		} else {
-			if ((this.imageToBeLoadedList.size() >= 1)
-					&& !this.imageToBeLoadedList
-					.containsKey(this.datasetWrapper)) {
-				// TODO Error dialog
-				checked.setSelected(false);
-				return;
-			}
-			if (this.imageToBeLoadedList.containsKey(this.datasetWrapper)) {
-				imageWrapperList = this.imageToBeLoadedList
-				        .get(this.datasetWrapper);
-			} else {
-				imageWrapperList = new ArrayList<OmeroImageWrapper>();
-			}
-			if ((imageWrapperList.size() >= 1)
-					&& !imageWrapperList.contains(temp.getImage())) {
-				// TODO error dialog
-				checked.setSelected(false);
-				return;
-			}
-			imageWrapperList.add(temp.getImage());
-			this.imageToBeLoadedList.put(this.datasetWrapper, imageWrapperList);
-			this.browserPanel.updateDatasetSelection(imageWrapperList.size());
-		}
-	}
-
-	private void handleMultiSelectionStateChanged(
-	        final OmeroThumbnailImageInfo temp, final JCheckBox checked) {
-		List<OmeroImageWrapper> imageWrapperList;
-		if (!checked.isSelected()) {
-			if (this.imageToBeLoadedList.containsKey(this.datasetWrapper)) {
-				imageWrapperList = this.imageToBeLoadedList
-				        .get(this.datasetWrapper);
-				imageWrapperList.remove(temp.getImage());
-			} else
-				// TODO error
-				return;
-		} else {
-			if (this.imageToBeLoadedList.containsKey(this.datasetWrapper)) {
-				imageWrapperList = this.imageToBeLoadedList
-				        .get(this.datasetWrapper);
-			} else {
-				imageWrapperList = new ArrayList<OmeroImageWrapper>();
-			}
-			imageWrapperList.add(temp.getImage());
-		}
-		if (imageWrapperList.isEmpty()) {
-			this.imageToBeLoadedList.remove(this.datasetWrapper);
-		} else {
-			this.imageToBeLoadedList.put(this.datasetWrapper, imageWrapperList);
-		}
-		this.browserPanel.updateDatasetSelection(imageWrapperList.size());
-	}
-
-	private void createAndAddListHeaderPanel() {
-		final int height = 20;
-		final int width = this.mainPanel.getWidth() - 40;
-		final int usableWidth = width - OmegaConstants.THUMBNAIL_SIZE;
-		final int nameDim = usableWidth - (150 + (50 * 7));
-		final int dateDim = 150;
-		final int checkDim = 50;
-		final int fieldDim = 100;
-
-		final Font font = new Font("Tahoma", 0, 12);
-		final JPanel listHeaderPanel = new JPanel();
-		listHeaderPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		// listHeaderPanel.setBackground(Color.white);
-		// listHeaderPanel.setBorder(new EmptyBorder(0, 10, 10, 10));
-		// final Dimension listHeaderDim = new Dimension(width, height);
-		// listHeaderPanel.setSize(listHeaderDim);
-		// listHeaderPanel.setPreferredSize(listHeaderDim);
-
-		final JLabel selectedLbl = new JLabel(
-				OmeroPluginGUIConstants.BROWSER_COLUMN_NAME_SELECTED);
-		selectedLbl.setHorizontalAlignment(SwingConstants.CENTER);
-		final Dimension selectedLblDim = new Dimension(checkDim, height);
-		selectedLbl.setSize(selectedLblDim);
-		selectedLbl.setPreferredSize(selectedLblDim);
-		selectedLbl.setFont(font);
-
-		final JLabel previewLbl = new JLabel(
-				OmeroPluginGUIConstants.BROWSER_COLUMN_NAME_PREVIEW);
-		previewLbl.setHorizontalAlignment(SwingConstants.CENTER);
-		final Dimension thumbnailLblDim = new Dimension(
-				OmegaConstants.THUMBNAIL_SIZE, height);
-		previewLbl.setSize(thumbnailLblDim);
-		previewLbl.setPreferredSize(thumbnailLblDim);
-		previewLbl.setFont(font);
-
-		final JLabel nameLbl = new JLabel(
-				OmeroPluginGUIConstants.BROWSER_COLUMN_NAME_NAME);
-		final Dimension nameLblDim = new Dimension(nameDim, height);
-		nameLbl.setSize(nameLblDim);
-		nameLbl.setPreferredSize(nameLblDim);
-		nameLbl.setFont(font);
-
-		final JLabel acquiredLbl = new JLabel(
-				OmeroPluginGUIConstants.BROWSER_COLUMN_NAME_ACQUIRED);
-		acquiredLbl.setHorizontalAlignment(SwingConstants.CENTER);
-		final Dimension dateLblDim = new Dimension(dateDim, height);
-		acquiredLbl.setSize(dateLblDim);
-		acquiredLbl.setPreferredSize(dateLblDim);
-		acquiredLbl.setFont(font);
-
-		final JLabel sizesXYZLbl = new JLabel(
-				OmeroPluginGUIConstants.BROWSER_COLUMN_NAME_DIM_XY);
-		sizesXYZLbl.setHorizontalAlignment(SwingConstants.CENTER);
-		final Dimension sizesXYZLblDim = new Dimension(fieldDim, height);
-		sizesXYZLbl.setSize(sizesXYZLblDim);
-		sizesXYZLbl.setPreferredSize(sizesXYZLblDim);
-		sizesXYZLbl.setFont(font);
-
-		final JLabel pixelSizesXYZLbl = new JLabel(
-				OmeroPluginGUIConstants.BROWSER_COLUMN_NAME_PIXELSIZES);
-		pixelSizesXYZLbl.setHorizontalAlignment(SwingConstants.CENTER);
-		final Dimension pixelSizesXYZLblDim = new Dimension(fieldDim, height);
-		pixelSizesXYZLbl.setSize(pixelSizesXYZLblDim);
-		pixelSizesXYZLbl.setPreferredSize(pixelSizesXYZLblDim);
-		pixelSizesXYZLbl.setFont(font);
-
-		final JLabel sizeZTCLbl = new JLabel(
-				OmeroPluginGUIConstants.BROWSER_COLUMN_NAME_DIM_ZTC);
-		sizeZTCLbl.setHorizontalAlignment(SwingConstants.CENTER);
-		final Dimension sizeZTCLblDim = new Dimension(fieldDim, height);
-		sizeZTCLbl.setSize(sizeZTCLblDim);
-		sizeZTCLbl.setPreferredSize(sizeZTCLblDim);
-		sizeZTCLbl.setFont(font);
-
-		listHeaderPanel.add(selectedLbl);
-		listHeaderPanel.add(previewLbl);
-		listHeaderPanel.add(nameLbl);
-		listHeaderPanel.add(acquiredLbl);
-		listHeaderPanel.add(sizesXYZLbl);
-		listHeaderPanel.add(sizeZTCLbl);
-		listHeaderPanel.add(pixelSizesXYZLbl);
-		this.mainPanel.add(listHeaderPanel);
-	}
-
-	private void createAndAddSingleImageListPanel(
-			final OmeroThumbnailImageInfo temp) {
-		final int width = this.mainPanel.getWidth() - 40;
-		final int usableWidth = width - OmegaConstants.THUMBNAIL_SIZE;
-		final int nameDim = usableWidth - (150 + (50 * 7));
-		final int dateDim = 150;
-		final int checkDim = 50;
-		final int fieldDim = 100;
-
-		final Font font = new Font("Tahoma", 0, 10);
-		final JPanel imageInfoPanel = new JPanel();
-		// imageInfoPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-		imageInfoPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		imageInfoPanel.setBackground(Color.white);
-		final int imgHeight = OmegaConstants.THUMBNAIL_SIZE + 40;
-		// final Dimension panelDim = new Dimension(imgWidth, imgHeight);
-		// imageInfoPanel.setSize(panelDim);
-		// imageInfoPanel.setPreferredSize(panelDim);
-
-		final ImageData imgData = temp.getImage().getImageData();
-		// image
-		final OmeroBrowserSingleImagePanel singleImagePanel = new OmeroBrowserSingleImagePanel(
-				temp.getImageID(), temp.getImageName(), temp.getBufferedImage());
-
-		// image name lbl
-		final String imageName = OmegaStringUtilities.getImageName(temp
-				.getImageName());
-		final JLabel imageNameLbl = new JLabel(imageName);
-		final Dimension nameLblDim = new Dimension(nameDim, imgHeight);
-		imageNameLbl.setSize(nameLblDim);
-		imageNameLbl.setPreferredSize(nameLblDim);
-		imageNameLbl.setFont(font);
-
-		// date lbl
-		final DateFormat format = new SimpleDateFormat(
-				OmegaConstants.OMEGA_DATE_FORMAT);
-		String date = OmeroPluginGUIConstants.BROWSER_UNKNOWN;
-		try {
-			final Timestamp ts = imgData.getAcquisitionDate();
-			date = format.format(ts);
-		} catch (final IllegalStateException ex) {
-			// TODO manage ex
-		}
-
-		final JLabel dateLbl = new JLabel(date);
-		dateLbl.setHorizontalAlignment(SwingConstants.RIGHT);
-		final Dimension dateLblDim = new Dimension(dateDim, imgHeight);
-		dateLbl.setSize(dateLblDim);
-		dateLbl.setPreferredSize(dateLblDim);
-		dateLbl.setFont(font);
-
-		final String sizeX = String.valueOf(imgData.getDefaultPixels()
-				.getSizeX());
-		final String sizeY = String.valueOf(imgData.getDefaultPixels()
-				.getSizeY());
-		final JLabel sizeXYLbl = new JLabel(sizeX + " x " + sizeY);
-		sizeXYLbl.setHorizontalAlignment(SwingConstants.RIGHT);
-		final Dimension sizeXYLblDim = new Dimension(fieldDim, imgHeight);
-		sizeXYLbl.setSize(sizeXYLblDim);
-		sizeXYLbl.setPreferredSize(sizeXYLblDim);
-		sizeXYLbl.setFont(font);
-
-		final String sizeZ = String.valueOf(imgData.getDefaultPixels()
-				.getSizeZ());
-		final String sizeT = String.valueOf(imgData.getDefaultPixels()
-				.getSizeT());
-		final String sizeC = String.valueOf(imgData.getDefaultPixels()
-				.getSizeC());
-		final JLabel sizeZTCLbl = new JLabel(sizeZ + " x " + sizeT + " x "
-				+ sizeC);
-		sizeZTCLbl.setHorizontalAlignment(SwingConstants.RIGHT);
-		final Dimension sizeZTCLblDim = new Dimension(fieldDim, imgHeight);
-		sizeZTCLbl.setSize(sizeZTCLblDim);
-		sizeZTCLbl.setPreferredSize(sizeZTCLblDim);
-		sizeZTCLbl.setFont(font);
-
-		final String physicalSizeX = new BigDecimal(imgData.getDefaultPixels()
-				.getPixelSizeX()).setScale(2, RoundingMode.HALF_UP).toString();
-		final String physicalSizeY = new BigDecimal(imgData.getDefaultPixels()
-				.getPixelSizeY()).setScale(2, RoundingMode.HALF_UP).toString();
-		final String physicalSizeZ = new BigDecimal(imgData.getDefaultPixels()
-				.getPixelSizeZ()).setScale(2, RoundingMode.HALF_UP).toString();
-		final JLabel pixelSizesXYZLbl = new JLabel(physicalSizeX + " x "
-				+ physicalSizeY + " x " + physicalSizeZ);
-		pixelSizesXYZLbl.setHorizontalAlignment(SwingConstants.RIGHT);
-		final Dimension pixelSizesXYZLblDim = new Dimension(fieldDim, imgHeight);
-		pixelSizesXYZLbl.setSize(pixelSizesXYZLblDim);
-		pixelSizesXYZLbl.setPreferredSize(pixelSizesXYZLblDim);
-		pixelSizesXYZLbl.setFont(font);
-
-		// SPT check
-		final JPanel checkPanel = new JPanel();
-		checkPanel.setLayout(new BorderLayout());
-		checkPanel.setBackground(Color.white);
-		final Dimension checkPanelDim = new Dimension(checkDim, imgHeight);
-		checkPanel.setSize(checkPanelDim);
-		checkPanel.setPreferredSize(checkPanelDim);
-		final JCheckBox checked = new JCheckBox();
-		checked.setBackground(Color.white);
-		if (this.imageToBeLoadedList.containsKey(this.datasetWrapper)) {
-			if (this.imageToBeLoadedList.get(this.datasetWrapper).contains(
-			        temp.getImage())) {
-				checked.setSelected(true);
-			}
-		}
-		// checked.setSelected(omegaData.containsImage(temp.getImageID()));
-		checkPanel.add(checked, BorderLayout.CENTER);
-		this.checkboxList.add(checked);
-
-		this.setCheckboxStatus(imageInfoPanel, temp, checked);
-		this.addCheckboxListener(temp, checked);
-
-		imageInfoPanel.add(checkPanel);
-		imageInfoPanel.add(singleImagePanel);
-		imageInfoPanel.add(imageNameLbl);
-		imageInfoPanel.add(dateLbl);
-		imageInfoPanel.add(sizeXYLbl);
-		imageInfoPanel.add(sizeZTCLbl);
-		imageInfoPanel.add(pixelSizesXYZLbl);
-		this.mainPanel.add(imageInfoPanel);
-	}
-
-	private void createAndAddSingleImagePreviewPanel(
-			final OmeroThumbnailImageInfo temp) {
-		final Font font = new Font("Tahoma", 0, 10);
-
-		final JPanel imageInfoPanel = new JPanel();
-		imageInfoPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-		imageInfoPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
-		imageInfoPanel.setBackground(Color.white);
-		final int imgWidth = OmegaConstants.THUMBNAIL_SIZE + 20;
-		final int imgHeight = OmegaConstants.THUMBNAIL_SIZE + 60;
-		imageInfoPanel.setSize(new Dimension(imgWidth, imgHeight));
-		imageInfoPanel.setPreferredSize(new Dimension(imgWidth, imgHeight));
-
-		final Dimension d = new Dimension(OmegaConstants.THUMBNAIL_SIZE, 20);
-
-		// image
-
-		final OmeroBrowserSingleImagePanel singleImagePanel = new OmeroBrowserSingleImagePanel(
-				temp.getImageID(), temp.getImageName(), temp.getBufferedImage());
-
-		// image name
-		final String imageName = OmegaStringUtilities.getImageName(temp
-				.getImageName());
-		final JLabel imageNameLbl = new JLabel(imageName);
-		imageNameLbl.setSize(d);
-		imageNameLbl.setPreferredSize(d);
-		imageNameLbl.setFont(font);
-
-		imageInfoPanel.add(singleImagePanel);
-		imageInfoPanel.add(imageNameLbl);
-
-		// SPT check
-		final JPanel sptCheckPanel = new JPanel();
-		sptCheckPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		sptCheckPanel.setBackground(Color.white);
-		sptCheckPanel.setSize(d);
-		sptCheckPanel.setPreferredSize(d);
-
-		final JCheckBox checked = new JCheckBox();
-		checked.setBackground(Color.white);
-		if (this.imageToBeLoadedList.containsKey(this.datasetWrapper)) {
-			final List<OmeroImageWrapper> imageWrapperList = this.imageToBeLoadedList
-			        .get(this.datasetWrapper);
-			for (final OmeroImageWrapper wrap : imageWrapperList) {
-				if (imageName == wrap.getName()) {
-					checked.setSelected(true);
-				}
-			}
-		}
-		// checked.setSelected(omegaData.containsImage(temp.getImageID()));
-
-		this.setCheckboxStatus(imageInfoPanel, temp, checked);
-		this.addCheckboxListener(temp, checked);
-
-		sptCheckPanel.add(checked);
-		this.checkboxList.add(checked);
-		imageInfoPanel.add(sptCheckPanel);
-		this.mainPanel.add(imageInfoPanel);
-	}
-
-	private void createAndAddSingleImagePanels() {
+	protected void createAndAddSingleImagePanels() {
 		if (this.imagesInfo == null) {
 			this.list.clear();
 			this.table.clear();
-			this.numberOfImages = 0;
 			return;
 		}
 
-		// final Iterator<OmeroThumbnailImageInfo> iterator = this.imagesInfo
-		// .iterator();
+		this.list.setLoadedElements(this.loadedImages);
+		this.table.setLoadedElements(this.loadedImages);
 
 		this.list.setElements(this.imagesInfo);
 		this.table.setElements(this.imagesInfo);
-
-		// if (this.isListView) {
-		// // this.mainPanel.setLayout(new GridLayout(this.numberOfImages, 1));
-		// this.createAndAddListHeaderPanel();
-		// } else {
-		// // final int width = this.mainPanel.getWidth();
-		// // final int imgPerRow = width / (OmegaConstants.THUMBNAIL_SIZE +
-		// // 25);
-		// // final int imgPerCol = this.numberOfImages / imgPerRow;
-		// // this.mainPanel.setLayout(new GridLayout(imgPerCol, imgPerRow));
-		// }
-		//
-		// while (iterator.hasNext()) {
-		// final OmeroThumbnailImageInfo temp = iterator.next();
-		// if (!this.isListView) {
-		// this.createAndAddSingleImagePreviewPanel(temp);
-		// } else {
-		// this.createAndAddSingleImageListPanel(temp);
-		// }
-		// }
 	}
 
 	/**
@@ -643,93 +183,21 @@ public class OmeroBrowserPanel extends GenericPanel {
 	 *            the images to display.
 	 */
 	public void setImagesAndRecreatePanels(
-			final List<OmeroThumbnailImageInfo> imageInfo// ,
-			/* final OmegaData omegaData */) {
-		// this.imageToBeLoadedList.clear();
+	        final List<OmeroThumbnailImageInfo> imageInfo) {
 		this.imagesInfo = imageInfo;
 		// TODO refactoring?!
 		if (this.imagesInfo != null) {
 			Collections.sort(this.imagesInfo,
-					new Comparator<OmeroThumbnailImageInfo>() {
-				@Override
-				public int compare(final OmeroThumbnailImageInfo o1,
-						final OmeroThumbnailImageInfo o2) {
-					return o1.getImageName().compareTo(
-							o2.getImageName());
-				}
-			});
+			        new Comparator<OmeroThumbnailImageInfo>() {
+				        @Override
+				        public int compare(final OmeroThumbnailImageInfo o1,
+				                final OmeroThumbnailImageInfo o2) {
+					        return o1.getImageName().compareTo(
+					                o2.getImageName());
+				        }
+			        });
 		}
-		this.setNumberOfImages();
-		this.checkForResize();
-		this.redrawImagePanels();
-	}
-
-	public void redrawImagePanels() {
-		// this.checkboxList.clear();
-		// this.mainPanel.removeAll();
 		this.createAndAddSingleImagePanels();
-		// this.mainPanel.revalidate();
-		// this.mainPanel.repaint();
-	}
-
-	private void setNumberOfImages() {
-		if (this.imagesInfo != null) {
-			this.numberOfImages = this.imagesInfo.size();
-		} else {
-			this.numberOfImages = 0;
-		}
-	}
-
-	public void checkForResize() {
-		// int numOfImagesPerRow = 1;
-		// final int width = this.mainPanel.getWidth() - 25;
-		// final int height = this.mainPanel.getHeight() - 25;
-		// if (!this.isListView) {
-		// final BigDecimal widthReal = new BigDecimal(width);
-		// final BigDecimal thumbWidth = new BigDecimal(
-		// OmegaConstants.THUMBNAIL_SIZE + 20);
-		// numOfImagesPerRow = widthReal.divide(thumbWidth, 0,
-		// RoundingMode.DOWN).intValue();
-		// }
-		// int numOfImagesPerCol = 0;
-		// if (numOfImagesPerRow != 0) {
-		// final BigDecimal val1 = new BigDecimal(this.numberOfImages);
-		// final BigDecimal val2 = new BigDecimal(numOfImagesPerRow);
-		// numOfImagesPerCol = val1.divide(val2, 0, RoundingMode.UP)
-		// .intValue();
-		// }
-		//
-		// int dimX = width;
-		// int offset = 20;
-		// if (this.isListView) {
-		// final int tempDimX = 900 + 20;
-		// if (dimX < tempDimX) {
-		// dimX = tempDimX;
-		// }
-		// } else {
-		// if (numOfImagesPerRow != 0) {
-		// dimX = numOfImagesPerRow
-		// * (OmegaConstants.THUMBNAIL_SIZE + offset);
-		// }
-		// offset += 40;
-		// }
-		//
-		// int dimY = height;
-		// if (numOfImagesPerCol != 0) {
-		// dimY = (numOfImagesPerCol * (OmegaConstants.THUMBNAIL_SIZE + offset))
-		// + 25;
-		// }
-		// final Dimension dim = new Dimension(dimX, dimY);
-		// this.mainPanel.setSize(dim);
-		// this.mainPanel.setPreferredSize(dim);
-		// // if (this.getParentContainer() instanceof JInternalFrame) {
-		// // final JInternalFrame intFrame = (JInternalFrame) this
-		// // .getParentContainer();
-		// // intFrame.repaint();
-		// // } else {
-		// // final JFrame frame = (JFrame) this.getParentContainer();
-		// // frame.repaint();
-		// // }
 	}
 
 	/**
@@ -740,12 +208,12 @@ public class OmeroBrowserPanel extends GenericPanel {
 	 */
 	public void browseDataset(final OmeroDatasetWrapper datasetWrapper) {
 		this.datasetWrapper = datasetWrapper;
-		this.setImagesAndRecreatePanels(null/* , null */);
+		this.setImagesAndRecreatePanels(null);
 		// this.createAndAddSingleImagePanels();
 		final OmeroBrowerPanelImageLoader loader = new OmeroBrowerPanelImageLoader(
-				this.browserPanel, this.gateway, datasetWrapper, true);
+		        this.browserPanel, this.gateway, datasetWrapper, true);
 		this.browserPanel.updateMessageStatus(new OmegaMessageEvent(
-				OmeroPluginGUIConstants.LOADING_IMAGES));
+		        OmeroPluginGUIConstants.LOADING_IMAGES));
 		final Thread t = new Thread(loader);
 		t.setName(loader.getClass().getSimpleName());
 		OmegaLogFileManager.registerAsExceptionHandlerOnThread(t);
@@ -756,29 +224,10 @@ public class OmeroBrowserPanel extends GenericPanel {
 		this.panelSize = size;
 	}
 
-	public void updateImagesSelection(final CheckBoxStatus datasetStatus) {
-		this.datasetStatus = datasetStatus;
+	public void updateImagesSelection() {
 		this.updating = true;
-		if (datasetStatus == CheckBoxStatus.INDETERMINATE) {
-			this.updating = false;
-			return;
-		}
-		for (final JCheckBox checkbox : this.checkboxList) {
-			if (datasetStatus == CheckBoxStatus.SELECTED) {
-				checkbox.setSelected(true);
-			} else {
-				checkbox.setSelected(false);
-			}
-		}
+		// TODO is this neded?
 		this.updating = false;
-	}
-
-	private boolean isImageLoaded(final long imageID) {
-		for (final OmegaImage img : this.loadedImages) {
-			if (img.getOmeroId() == imageID)
-				return true;
-		}
-		return false;
 	}
 
 	public void updateLoadedElements(final List<OmegaImage> loadedImages) {
@@ -786,12 +235,7 @@ public class OmeroBrowserPanel extends GenericPanel {
 		if (loadedImages != null) {
 			this.loadedImages.addAll(loadedImages);
 		}
-		this.imageToBeLoadedList.clear();
-		this.redrawImagePanels();
-	}
-
-	public void clearImagesToBeLoadedList() {
-		this.imageToBeLoadedList.clear();
+		this.createAndAddSingleImagePanels();
 	}
 
 	public boolean isMultiSelection() {
@@ -803,6 +247,18 @@ public class OmeroBrowserPanel extends GenericPanel {
 	}
 
 	public Map<OmeroDatasetWrapper, List<OmeroImageWrapper>> getImagesToBeLoaded() {
-		return this.imageToBeLoadedList;
+		final Map<OmeroDatasetWrapper, List<OmeroImageWrapper>> map = new LinkedHashMap<OmeroDatasetWrapper, List<OmeroImageWrapper>>();
+		List<OmeroThumbnailImageInfo> thumbnailList = null;
+		if (this.isListView) {
+			thumbnailList = this.list.getSelectedThumbnailList();
+		} else {
+			thumbnailList = this.table.getSelectedThumbnailList();
+		}
+		final List<OmeroImageWrapper> imageList = new ArrayList<OmeroImageWrapper>();
+		for (final OmeroThumbnailImageInfo imageInfo : thumbnailList) {
+			imageList.add(imageInfo.getImage());
+		}
+		map.put(this.datasetWrapper, imageList);
+		return map;
 	}
 }

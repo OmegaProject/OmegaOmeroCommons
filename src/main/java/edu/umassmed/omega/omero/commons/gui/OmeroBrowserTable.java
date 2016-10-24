@@ -10,6 +10,7 @@ import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -18,6 +19,8 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -29,9 +32,11 @@ import javax.swing.table.TableColumn;
 import ome.model.units.BigResult;
 import edu.umassmed.omega.commons.OmegaLogFileManager;
 import edu.umassmed.omega.commons.constants.OmegaConstants;
+import edu.umassmed.omega.commons.data.coreElements.OmegaImage;
 import edu.umassmed.omega.omero.commons.data.OmeroThumbnailImageInfo;
 
-public class OmeroBrowserTable extends JTable implements TableModelListener {
+public class OmeroBrowserTable extends JTable implements TableModelListener,
+ListSelectionListener {
 
 	private static final long serialVersionUID = 7897513040384713703L;
 
@@ -45,8 +50,9 @@ public class OmeroBrowserTable extends JTable implements TableModelListener {
 
 	private List<OmeroThumbnailImageInfo> data;
 	private final DefaultTableModel model;
+	private final List<Long> loadedIDs;
 
-	public OmeroBrowserTable() {
+	public OmeroBrowserTable(final boolean isMultiSelection) {
 		final Object[] ident = { OmeroBrowserTable.COLUMN_ID,
 		        OmeroBrowserTable.COLUMN_THUMBNAIL,
 		        OmeroBrowserTable.COLUMN_NAME,
@@ -54,7 +60,12 @@ public class OmeroBrowserTable extends JTable implements TableModelListener {
 		        OmeroBrowserTable.COLUMN_DIM_XY,
 		        OmeroBrowserTable.COLUMN_DIM_ZTC,
 		        OmeroBrowserTable.COLUMN_PIXSIZE };
-		this.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		if (isMultiSelection) {
+			this.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		} else {
+			this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		}
+		this.getSelectionModel().addListSelectionListener(this);
 		this.model = new OmeroBrowserTableModel(ident);
 		this.setModel(this.model);
 		this.model.addTableModelListener(this);
@@ -79,6 +90,7 @@ public class OmeroBrowserTable extends JTable implements TableModelListener {
 			defaults.put("Table.alternateRowColor", new Color(240, 240, 240));
 		}
 		this.setAutoCreateRowSorter(true);
+		this.loadedIDs = new ArrayList<Long>();
 	}
 
 	public void clear() {
@@ -155,8 +167,27 @@ public class OmeroBrowserTable extends JTable implements TableModelListener {
 	}
 
 	@Override
+	public void valueChanged(final ListSelectionEvent e) {
+		if (e.getValueIsAdjusting() == false) {
+			if (this.getSelectedRow() == -1) {
+
+			} else {
+				this.handleSelection();
+				super.valueChanged(e);
+			}
+		}
+	}
+
+	@Override
 	public void tableChanged(final TableModelEvent ev) {
+		// this.handleSelection();
 		super.tableChanged(ev);
+	}
+
+	private void handleSelection() {
+		for (final int i : this.getSelectedRows()) {
+			System.out.println(i);
+		}
 	}
 
 	@Override
@@ -168,22 +199,43 @@ public class OmeroBrowserTable extends JTable implements TableModelListener {
 
 			@Override
 			public Component getTableCellRendererComponent(final JTable table,
-					final Object value, final boolean isSelected,
+					final Object value, boolean isSelected,
 			        final boolean hasFocus, final int row, final int column) {
+				final OmeroThumbnailImageInfo imageInfo = OmeroBrowserTable.this.data
+				        .get(row);
+				final boolean isLoaded = OmeroBrowserTable.this.loadedIDs
+						.contains(imageInfo.getImageID());
+				if (isLoaded) {
+					isSelected = false;
+				}
 				final JLabel label = (JLabel) super
 						.getTableCellRendererComponent(table, value,
 								isSelected, hasFocus, row, column);
+				if (isLoaded) {
+					label.setBackground(Color.GRAY);
+					// label.setEnabled(false);
+				}
 				switch (column) {
 				case 1:
 					label.setIcon(new ImageIcon((BufferedImage) value));
 					label.setText("");
-					label.setToolTipText(OmeroBrowserTable.this.data.get(row)
-					        .getImageName());
+					label.setToolTipText(imageInfo.getImageName());
 					break;
 				}
 				return label;
 			}
 		};
+	}
+
+	public List<OmeroThumbnailImageInfo> getSelectedThumbnailList() {
+		final List<OmeroThumbnailImageInfo> thumbnailList = new ArrayList<OmeroThumbnailImageInfo>();
+		for (final int row : this.getSelectedRows()) {
+			final OmeroThumbnailImageInfo imageInfo = this.data.get(row);
+			if (!this.loadedIDs.contains(imageInfo.getImageID())) {
+				thumbnailList.add(imageInfo);
+			}
+		}
+		return thumbnailList;
 	}
 
 	class OmeroBrowserTableModel extends DefaultTableModel {
@@ -197,6 +249,13 @@ public class OmeroBrowserTable extends JTable implements TableModelListener {
 		@Override
 		public boolean isCellEditable(final int row, final int column) {
 			return false;
+		}
+	}
+
+	public void setLoadedElements(final List<OmegaImage> loadedImages) {
+		this.loadedIDs.clear();
+		for (final OmegaImage image : loadedImages) {
+			this.loadedIDs.add(image.getOmeroId());
 		}
 	}
 }

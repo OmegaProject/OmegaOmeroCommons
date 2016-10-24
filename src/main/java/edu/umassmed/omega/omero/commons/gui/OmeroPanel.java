@@ -60,7 +60,6 @@ import edu.umassmed.omega.commons.eventSystem.events.OmegaMessageEvent;
 import edu.umassmed.omega.commons.exceptions.OmegaPluginExceptionStatusPanel;
 import edu.umassmed.omega.commons.gui.GenericPluginPanel;
 import edu.umassmed.omega.commons.gui.GenericStatusPanel;
-import edu.umassmed.omega.commons.gui.checkboxTree.CheckBoxStatus;
 import edu.umassmed.omega.commons.plugins.OmegaPlugin;
 import edu.umassmed.omega.omero.commons.OmeroGateway;
 import edu.umassmed.omega.omero.commons.data.OmeroDataWrapper;
@@ -85,7 +84,7 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 	private OmeroBrowserPanel browserPanel;
 	private GenericStatusPanel statusPanel;
 
-	private JButton loadImages_butt, loadAndSelectImages_butt, close_butt;
+	private JButton loadImages_butt, close_butt;
 
 	private OmeroGateway gateway;
 
@@ -364,8 +363,7 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 		}
 		this.browserPanel.setCompSize(this.mainPanel.getRightComponent()
 		        .getSize());
-		this.browserPanel.checkForResize();
-		this.browserPanel.redrawImagePanels();
+		this.browserPanel.createAndAddSingleImagePanels();
 		this.oldSplitPaneDimension = dimension;
 	}
 
@@ -378,7 +376,7 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 
 	private void loadSelectedData() throws ServerError, IOException {
 		final Map<OmeroDatasetWrapper, List<OmeroImageWrapper>> imagesToBeLoaded = this.browserPanel
-		        .getImagesToBeLoaded();
+				.getImagesToBeLoaded();
 		final List<OmeroDatasetWrapper> datasetsToBeLoaded = this.projectPanel
 		        .getSelectedDatasets();
 		for (final OmeroDataWrapper datasetWrapper : imagesToBeLoaded.keySet()) {
@@ -389,17 +387,19 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 			        .get(datasetWrapper));
 		}
 
-		final Map<Thread, OmeroBrowerPanelImageLoader> threads = new LinkedHashMap<Thread, OmeroBrowerPanelImageLoader>();
-		this.numOfThreads = this.projectPanel.getSelectedDatasets().size();
-		this.completedThreadsCounter = 0;
-		for (final OmeroDatasetWrapper datasetWrapper : datasetsToBeLoaded) {
-			final OmeroBrowerPanelImageLoader runnable = new OmeroBrowerPanelImageLoader(
-			        this, this.gateway, datasetWrapper, false);
-			final Thread t = new Thread(runnable);
-			threads.put(t, runnable);
-			t.setName(runnable.getClass().getSimpleName());
-			OmegaLogFileManager.registerAsExceptionHandlerOnThread(t);
-			t.start();
+		if (imagesToBeLoaded.isEmpty()) {
+			final Map<Thread, OmeroBrowerPanelImageLoader> threads = new LinkedHashMap<Thread, OmeroBrowerPanelImageLoader>();
+			this.numOfThreads = this.projectPanel.getSelectedDatasets().size();
+			this.completedThreadsCounter = 0;
+			for (final OmeroDatasetWrapper datasetWrapper : datasetsToBeLoaded) {
+				final OmeroBrowerPanelImageLoader runnable = new OmeroBrowerPanelImageLoader(
+				        this, this.gateway, datasetWrapper, false);
+				final Thread t = new Thread(runnable);
+				threads.put(t, runnable);
+				t.setName(runnable.getClass().getSimpleName());
+				OmegaLogFileManager.registerAsExceptionHandlerOnThread(t);
+				t.start();
+			}
 		}
 
 		if (this.numOfThreads == 0) {
@@ -482,13 +482,13 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 	}
 
 	@Override
-	public void updateImagesSelection(final CheckBoxStatus datasetStatus) {
-		this.browserPanel.updateImagesSelection(datasetStatus);
+	public void updateImagesSelection() {
+		this.browserPanel.updateImagesSelection();
 	}
 
 	@Override
 	public void updateDatasetSelection(final int selectedImages) {
-		this.projectPanel.updateDatasetSelection(selectedImages);
+		// this.projectPanel.updateDatasetSelection(selectedImages);
 	}
 
 	public OmeroGateway getGateway() {
