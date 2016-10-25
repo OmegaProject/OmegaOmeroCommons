@@ -209,6 +209,8 @@ public class OmeroBrowserPanel extends GenericPanel {
 	public void browseDataset(final OmeroDatasetWrapper datasetWrapper) {
 		this.datasetWrapper = datasetWrapper;
 		this.setImagesAndRecreatePanels(null);
+		if (datasetWrapper == null)
+			return;
 		// this.createAndAddSingleImagePanels();
 		final OmeroBrowerPanelImageLoader loader = new OmeroBrowerPanelImageLoader(
 		        this.browserPanel, this.gateway, datasetWrapper, true);
@@ -258,7 +260,9 @@ public class OmeroBrowserPanel extends GenericPanel {
 		for (final OmeroThumbnailImageInfo imageInfo : thumbnailList) {
 			imageList.add(imageInfo.getImage());
 		}
-		map.put(this.datasetWrapper, imageList);
+		if (!imageList.isEmpty()) {
+			map.put(this.datasetWrapper, imageList);
+		}
 		return map;
 	}
 }

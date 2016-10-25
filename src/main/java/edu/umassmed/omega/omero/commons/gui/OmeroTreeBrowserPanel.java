@@ -80,9 +80,8 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 	private JTree dataTree;
 
 	private final boolean isMultiSelection;
+	private boolean isAdjusting;
 
-	private List<OmeroProjectWrapper> expandedProjects;
-	private List<OmeroExperimenterWrapper> expandedExperimenter;
 	private OmeroDatasetWrapper currentSelection;
 
 	public OmeroTreeBrowserPanel(final RootPaneContainer parentContainer,
@@ -90,6 +89,7 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 	        final OmeroGateway gateway, final boolean isMultiSelection) {
 		super(parentContainer);
 		this.isMultiSelection = isMultiSelection;
+		this.isAdjusting = false;
 
 		this.currentSelection = null;
 		this.selectedDatasetList = new ArrayList<OmeroDatasetWrapper>();
@@ -118,7 +118,7 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 
 		this.dataTree.expandRow(0);
 		this.dataTree.setRootVisible(false);
-		this.dataTree.setEditable(true);
+		this.dataTree.setEditable(false);
 
 		final JScrollPane scrollPane = new JScrollPane(this.dataTree);
 		scrollPane.setBorder(new TitledBorder(
@@ -145,6 +145,8 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 
 	private void handleSelection() {
 		this.selectedDatasetList.clear();
+		if (this.isAdjusting)
+			return;
 		for (final TreePath path : OmeroTreeBrowserPanel.this.dataTree
 				.getSelectionPaths()) {
 			final DefaultMutableTreeNode node = (DefaultMutableTreeNode) path
@@ -243,6 +245,21 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 	}
 
 	public void updateTree() {
+		this.isAdjusting = true;
+		this.selectedDatasetList.clear();
+		final List<TreePath> expandedPaths = new ArrayList<TreePath>();
+		for (int row = 0; row < this.dataTree.getRowCount(); row++) {
+			if (this.dataTree.isExpanded(row)) {
+				final TreePath path = this.dataTree.getPathForRow(row);
+				expandedPaths.add(path);
+			}
+		}
+		final List<TreePath> selectedPaths = new ArrayList<TreePath>();
+		if (this.dataTree.getSelectionPaths() != null) {
+			for (final TreePath treePath : this.dataTree.getSelectionPaths()) {
+				selectedPaths.add(treePath);
+			}
+		}
 		this.dataTree.setRootVisible(true);
 
 		String s = null;
@@ -250,7 +267,7 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 
 		((DefaultTreeModel) this.dataTree.getModel()).reload();
 		this.nodeMap.clear();
-
+		// TODO mark in gray if all images are loaded / all dataset if project
 		for (final OmeroExperimenterWrapper expWrapper : this.expList) {
 			final List<OmeroProjectWrapper> projects = expWrapper.getProjects();
 			final DefaultMutableTreeNode expNode = new DefaultMutableTreeNode();
@@ -261,6 +278,7 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 				for (final OmeroDatasetWrapper datasetWrapper : datasets) {
 					final DefaultMutableTreeNode datasetNode = new DefaultMutableTreeNode();
 					s = datasetWrapper.getStringRepresentation();
+
 					this.nodeMap.put(s, datasetWrapper);
 					datasetNode.setUserObject(s);
 					projectNode.add(datasetNode);
@@ -279,6 +297,32 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 		this.dataTree.expandRow(0);
 		this.dataTree.setRootVisible(false);
 		this.dataTree.repaint();
+		this.isAdjusting = false;
+		this.expandChildrenIfNeeded(this.root, expandedPaths, selectedPaths);
+		for (final OmeroDatasetWrapper wrapper : this.selectedDatasetList) {
+			System.out.println(wrapper.getStringRepresentation());
+		}
+	}
+
+	private void expandChildrenIfNeeded(final DefaultMutableTreeNode node,
+			final List<TreePath> expandedPaths,
+			final List<TreePath> selectedPaths) {
+		for (int i = 0; i < node.getChildCount(); i++) {
+			final DefaultMutableTreeNode child = (DefaultMutableTreeNode) node
+			        .getChildAt(i);
+			final TreePath path = new TreePath(child.getPath());
+			for (final TreePath expandedPath : expandedPaths) {
+				if (expandedPath.toString().equals(path.toString())) {
+					this.dataTree.expandPath(path);
+				}
+			}
+			for (final TreePath selectedPath : selectedPaths) {
+				if (selectedPath.toString().equals(path.toString())) {
+					this.dataTree.addSelectionPath(path);
+				}
+			}
+			this.expandChildrenIfNeeded(child, expandedPaths, selectedPaths);
+		}
 	}
 
 	public List<OmeroDatasetWrapper> getSelectedDatasets() {
@@ -290,7 +334,6 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 		if (loadedImages != null) {
 			this.loadedImages.addAll(loadedImages);
 		}
-		this.selectedDatasetList.clear();
 		this.updateTree();
 	}
 
