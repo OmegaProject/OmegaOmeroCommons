@@ -299,9 +299,6 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 		this.dataTree.repaint();
 		this.isAdjusting = false;
 		this.expandChildrenIfNeeded(this.root, expandedPaths, selectedPaths);
-		for (final OmeroDatasetWrapper wrapper : this.selectedDatasetList) {
-			System.out.println(wrapper.getStringRepresentation());
-		}
 	}
 
 	private void expandChildrenIfNeeded(final DefaultMutableTreeNode node,

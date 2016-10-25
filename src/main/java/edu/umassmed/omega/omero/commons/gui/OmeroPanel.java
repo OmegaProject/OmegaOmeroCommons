@@ -129,7 +129,7 @@ OmeroAbstractBrowserInterface {
 	public OmeroPanel(final RootPaneContainer parent, final OmeroGateway gateway) {
 		super(parent);
 
-		this.isMultiSelection = false;
+		this.isMultiSelection = true;
 
 		this.imageWrapperToBeLoadedList = new ArrayList<OmeroImageWrapper>();
 
