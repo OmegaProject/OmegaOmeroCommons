@@ -167,6 +167,7 @@ OmeroAbstractBrowserInterface {
 			this.loadableUserMenu.add(this.notLoggedVisualMItem);
 			this.projectPanel.resetExperimenterData();
 			this.projectPanel.updateTree();
+			this.browserPanel.browseDataset(null);
 			return;
 		}
 
@@ -520,5 +521,9 @@ OmeroAbstractBrowserInterface {
 		this.gateway = gateway;
 		this.projectPanel.setGateway(gateway);
 		this.browserPanel.setGateway(gateway);
+	}
+
+	protected void setLoadingCanceled() {
+		this.loadImages_butt.setEnabled(true);
 	}
 }

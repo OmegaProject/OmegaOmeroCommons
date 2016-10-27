@@ -175,10 +175,12 @@ public class OmeroBrowerPanelImageLoader implements Runnable {
 									loadingStatus));
 						}
 					} else {
-						OmeroBrowerPanelImageLoader.this.displayerPanel
-						.updateMessageStatus(new OmeroWrapperMessageEvent(
-								loadingStatus,
-								OmeroBrowerPanelImageLoader.this.imageWrapperList));
+						if(imagesLoaded >= imagesToLoad) {
+							OmeroBrowerPanelImageLoader.this.displayerPanel
+							.updateMessageStatus(new OmeroWrapperMessageEvent(
+									loadingStatus,
+									OmeroBrowerPanelImageLoader.this.imageWrapperList));
+						}
 					}
 				}
 			});

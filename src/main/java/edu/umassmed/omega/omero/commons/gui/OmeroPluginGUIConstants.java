@@ -26,6 +26,8 @@ public class OmeroPluginGUIConstants {
 	public static final String BROWSER_COLUMN_NAME_DIM_XY = "Dimensions (XY)";
 	public static final String BROWSER_COLUMN_NAME_DIM_ZTC = "Dimensions (ZTC)";
 	public static final String BROWSER_COLUMN_NAME_PIXELSIZES = "Pixel Size (XYZ) "
-			+ OmegaConstantsMathSymbols.MU + "u";
+	        + OmegaConstantsMathSymbols.MU + "u";
 	public static final String BROWSER_UNKNOWN = "ND";
+
+	public static final String LOADING_WARNING = "You are trying to load more then 5 image, this could take a long time, are you sure?";
 }

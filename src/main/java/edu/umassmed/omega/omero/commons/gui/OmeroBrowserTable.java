@@ -36,7 +36,7 @@ import edu.umassmed.omega.commons.data.coreElements.OmegaImage;
 import edu.umassmed.omega.omero.commons.data.OmeroThumbnailImageInfo;
 
 public class OmeroBrowserTable extends JTable implements TableModelListener,
-ListSelectionListener {
+        ListSelectionListener {
 
 	private static final long serialVersionUID = 7897513040384713703L;
 
@@ -54,12 +54,12 @@ ListSelectionListener {
 
 	public OmeroBrowserTable(final boolean isMultiSelection) {
 		final Object[] ident = { OmeroBrowserTable.COLUMN_ID,
-		        OmeroBrowserTable.COLUMN_THUMBNAIL,
-		        OmeroBrowserTable.COLUMN_NAME,
-		        OmeroBrowserTable.COLUMN_ACQUIRED,
-		        OmeroBrowserTable.COLUMN_DIM_XY,
-		        OmeroBrowserTable.COLUMN_DIM_ZTC,
-		        OmeroBrowserTable.COLUMN_PIXSIZE };
+				OmeroBrowserTable.COLUMN_THUMBNAIL,
+				OmeroBrowserTable.COLUMN_NAME,
+				OmeroBrowserTable.COLUMN_ACQUIRED,
+				OmeroBrowserTable.COLUMN_DIM_XY,
+				OmeroBrowserTable.COLUMN_DIM_ZTC,
+				OmeroBrowserTable.COLUMN_PIXSIZE };
 		if (isMultiSelection) {
 			this.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		} else {
@@ -78,7 +78,7 @@ ListSelectionListener {
 				final java.awt.Point p = ev.getPoint();
 				final int index = this.columnModel.getColumnIndexAtX(p.x);
 				final int realIndex = this.columnModel.getColumn(index)
-				        .getModelIndex();
+						.getModelIndex();
 				return (String) ident[realIndex];
 			}
 		});
@@ -91,6 +91,7 @@ ListSelectionListener {
 		}
 		this.setAutoCreateRowSorter(true);
 		this.loadedIDs = new ArrayList<Long>();
+		this.setShowGrid(false);
 	}
 
 	public void clear() {
@@ -105,7 +106,7 @@ ListSelectionListener {
 		this.model.setRowCount(0);
 		for (final OmeroThumbnailImageInfo imageInfo : this.data) {
 			final DateFormat format = new SimpleDateFormat(
-			        OmegaConstants.OMEGA_DATE_FORMAT);
+					OmegaConstants.OMEGA_DATE_FORMAT);
 			String date = OmeroPluginGUIConstants.BROWSER_UNKNOWN;
 			try {
 				final Timestamp ts = imageInfo.getImage().getAcquisitionDate();
@@ -114,33 +115,33 @@ ListSelectionListener {
 				OmegaLogFileManager.handleUncaughtException(ex);
 			}
 			final String sizeXY = imageInfo.getImage().getSizeX() + " x "
-			        + imageInfo.getImage().getSizeY();
+					+ imageInfo.getImage().getSizeY();
 			final String sizeZTC = imageInfo.getImage().getSizeZ() + " x "
-			        + imageInfo.getImage().getSizeT() + " x "
-			        + imageInfo.getImage().getSizeC();
+					+ imageInfo.getImage().getSizeT() + " x "
+					+ imageInfo.getImage().getSizeC();
 			String pixelsSizeXYZ = "";
 			try {
 				final Double sizeX = imageInfo.getImage().getPixelsSizeX();
 				final Double sizeY = imageInfo.getImage().getPixelsSizeY();
 				final Double sizeZ = imageInfo.getImage().getPixelsSizeZ();
 				final String sizeXLabel = sizeX != null ? new BigDecimal(sizeX)
-				        .setScale(2, RoundingMode.HALF_UP).toString()
-				        : OmeroPluginGUIConstants.BROWSER_UNKNOWN;
+				.setScale(2, RoundingMode.HALF_UP).toString()
+				: OmeroPluginGUIConstants.BROWSER_UNKNOWN;
 				final String sizeYLabel = sizeY != null ? new BigDecimal(sizeY)
-				        .setScale(2, RoundingMode.HALF_UP).toString()
-				        : OmeroPluginGUIConstants.BROWSER_UNKNOWN;
+				.setScale(2, RoundingMode.HALF_UP).toString()
+				: OmeroPluginGUIConstants.BROWSER_UNKNOWN;
 				final String sizeZLabel = sizeZ != null ? new BigDecimal(sizeZ)
-				        .setScale(2, RoundingMode.HALF_UP).toString()
-				        : OmeroPluginGUIConstants.BROWSER_UNKNOWN;
+				.setScale(2, RoundingMode.HALF_UP).toString()
+				: OmeroPluginGUIConstants.BROWSER_UNKNOWN;
 
 				pixelsSizeXYZ = sizeXLabel + " x " + sizeYLabel + " x  "
-				        + sizeZLabel;
+						+ sizeZLabel;
 			} catch (final BigResult ex) {
 				OmegaLogFileManager.handleUncaughtException(ex);
 			}
 			final Object[] rowData = { imageInfo.getImageID(),
-			        imageInfo.getBufferedImage(), imageInfo.getImageName(),
-			        date, sizeXY, sizeZTC, pixelsSizeXYZ };
+					imageInfo.getBufferedImage(), imageInfo.getImageName(),
+					date, sizeXY, sizeZTC, pixelsSizeXYZ };
 			this.model.addRow(rowData);
 			final int width = imageInfo.getBufferedImage().getWidth();
 			if (maxSize < width) {
@@ -199,18 +200,18 @@ ListSelectionListener {
 
 			@Override
 			public Component getTableCellRendererComponent(final JTable table,
-					final Object value, boolean isSelected,
-			        final boolean hasFocus, final int row, final int column) {
+			        final Object value, boolean isSelected,
+					final boolean hasFocus, final int row, final int column) {
 				final OmeroThumbnailImageInfo imageInfo = OmeroBrowserTable.this.data
-				        .get(row);
+						.get(row);
 				final boolean isLoaded = OmeroBrowserTable.this.loadedIDs
-						.contains(imageInfo.getImageID());
+				        .contains(imageInfo.getImageID());
 				if (isLoaded) {
 					isSelected = false;
 				}
 				final JLabel label = (JLabel) super
-						.getTableCellRendererComponent(table, value,
-								isSelected, hasFocus, row, column);
+				        .getTableCellRendererComponent(table, value,
+				                isSelected, hasFocus, row, column);
 				if (isLoaded) {
 					label.setBackground(Color.GRAY);
 					// label.setEnabled(false);
