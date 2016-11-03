@@ -136,7 +136,7 @@ public class OmeroBrowerPanelImageLoader implements Runnable {
 							bufferedImages.get(0)));
 				} catch (final Exception ex) {
 					error = true;
-					OmegaLogFileManager.handleUncaughtException(ex);
+					OmegaLogFileManager.handleUncaughtException(ex, true);
 				}
 			}
 
@@ -175,7 +175,7 @@ public class OmeroBrowerPanelImageLoader implements Runnable {
 									loadingStatus));
 						}
 					} else {
-						if(imagesLoaded >= imagesToLoad) {
+						if (OmeroBrowerPanelImageLoader.this.imagesLoaded >= OmeroBrowerPanelImageLoader.this.imagesToLoad) {
 							OmeroBrowerPanelImageLoader.this.displayerPanel
 							.updateMessageStatus(new OmeroWrapperMessageEvent(
 									loadingStatus,
@@ -185,7 +185,7 @@ public class OmeroBrowerPanelImageLoader implements Runnable {
 				}
 			});
 		} catch (final InvocationTargetException | InterruptedException ex) {
-			OmegaLogFileManager.handleUncaughtException(ex);
+			OmegaLogFileManager.handleUncaughtException(ex, true);
 		}
 	}
 }

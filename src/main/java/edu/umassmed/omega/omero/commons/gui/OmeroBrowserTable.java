@@ -106,42 +106,67 @@ public class OmeroBrowserTable extends JTable implements TableModelListener,
 		this.model.setRowCount(0);
 		for (final OmeroThumbnailImageInfo imageInfo : this.data) {
 			final DateFormat format = new SimpleDateFormat(
-					OmegaConstants.OMEGA_DATE_FORMAT);
+			        OmegaConstants.OMEGA_DATE_FORMAT);
 			String date = OmeroPluginGUIConstants.BROWSER_UNKNOWN;
 			try {
 				final Timestamp ts = imageInfo.getImage().getAcquisitionDate();
-				date = format.format(ts);
+				if (ts != null) {
+					date = format.format(ts);
+				}
 			} catch (final IllegalStateException ex) {
-				OmegaLogFileManager.handleUncaughtException(ex);
+				OmegaLogFileManager.handleUncaughtException(ex, false);
 			}
-			final String sizeXY = imageInfo.getImage().getSizeX() + " x "
-					+ imageInfo.getImage().getSizeY();
-			final String sizeZTC = imageInfo.getImage().getSizeZ() + " x "
-					+ imageInfo.getImage().getSizeT() + " x "
-					+ imageInfo.getImage().getSizeC();
-			String pixelsSizeXYZ = "";
+			final String sizeXY = (imageInfo.getImage().getSizeX() != -1 ? String
+			        .valueOf(imageInfo.getImage().getSizeX())
+			        : OmeroPluginGUIConstants.BROWSER_UNKNOWN)
+			        + " x "
+			        + (imageInfo.getImage().getSizeY() != -1 ? String
+			                .valueOf(imageInfo.getImage().getSizeY())
+			                : OmeroPluginGUIConstants.BROWSER_UNKNOWN);
+			final String sizeZTC = (imageInfo.getImage().getSizeZ() != -1 ? String
+			        .valueOf(imageInfo.getImage().getSizeZ())
+			        : OmeroPluginGUIConstants.BROWSER_UNKNOWN)
+			        + " x "
+			        + (imageInfo.getImage().getSizeT() != -1 ? String
+			                .valueOf(imageInfo.getImage().getSizeT())
+			                : OmeroPluginGUIConstants.BROWSER_UNKNOWN)
+			        + " x "
+			        + (imageInfo.getImage().getSizeC() != -1 ? String
+			                .valueOf(imageInfo.getImage().getSizeC())
+			                : OmeroPluginGUIConstants.BROWSER_UNKNOWN);
+			String pixelsSizeXYZ = OmeroPluginGUIConstants.BROWSER_UNKNOWN;
+			String sizeXLabel = OmeroPluginGUIConstants.BROWSER_UNKNOWN;
+			String sizeYLabel = OmeroPluginGUIConstants.BROWSER_UNKNOWN;
+			String sizeZLabel = OmeroPluginGUIConstants.BROWSER_UNKNOWN;
 			try {
 				final Double sizeX = imageInfo.getImage().getPixelsSizeX();
-				final Double sizeY = imageInfo.getImage().getPixelsSizeY();
-				final Double sizeZ = imageInfo.getImage().getPixelsSizeZ();
-				final String sizeXLabel = sizeX != null ? new BigDecimal(sizeX)
-				.setScale(2, RoundingMode.HALF_UP).toString()
-				: OmeroPluginGUIConstants.BROWSER_UNKNOWN;
-				final String sizeYLabel = sizeY != null ? new BigDecimal(sizeY)
-				.setScale(2, RoundingMode.HALF_UP).toString()
-				: OmeroPluginGUIConstants.BROWSER_UNKNOWN;
-				final String sizeZLabel = sizeZ != null ? new BigDecimal(sizeZ)
-				.setScale(2, RoundingMode.HALF_UP).toString()
-				: OmeroPluginGUIConstants.BROWSER_UNKNOWN;
-
-				pixelsSizeXYZ = sizeXLabel + " x " + sizeYLabel + " x  "
-						+ sizeZLabel;
+				sizeXLabel = sizeX != null ? new BigDecimal(sizeX).setScale(2,
+				        RoundingMode.HALF_UP).toString()
+				        : OmeroPluginGUIConstants.BROWSER_UNKNOWN;
 			} catch (final BigResult ex) {
-				OmegaLogFileManager.handleUncaughtException(ex);
+				OmegaLogFileManager.handleUncaughtException(ex, false);
 			}
+			try {
+				final Double sizeY = imageInfo.getImage().getPixelsSizeY();
+				sizeYLabel = sizeY != null ? new BigDecimal(sizeY).setScale(2,
+				        RoundingMode.HALF_UP).toString()
+				        : OmeroPluginGUIConstants.BROWSER_UNKNOWN;
+			} catch (final BigResult ex) {
+				OmegaLogFileManager.handleUncaughtException(ex, false);
+			}
+			try {
+				final Double sizeZ = imageInfo.getImage().getPixelsSizeZ();
+				sizeZLabel = sizeZ != null ? new BigDecimal(sizeZ).setScale(2,
+				        RoundingMode.HALF_UP).toString()
+				        : OmeroPluginGUIConstants.BROWSER_UNKNOWN;
+			} catch (final BigResult ex) {
+				OmegaLogFileManager.handleUncaughtException(ex, false);
+			}
+			pixelsSizeXYZ = sizeXLabel + " x " + sizeYLabel + " x  "
+			        + sizeZLabel;
 			final Object[] rowData = { imageInfo.getImageID(),
-					imageInfo.getBufferedImage(), imageInfo.getImageName(),
-					date, sizeXY, sizeZTC, pixelsSizeXYZ };
+			        imageInfo.getBufferedImage(), imageInfo.getImageName(),
+			        date, sizeXY, sizeZTC, pixelsSizeXYZ };
 			this.model.addRow(rowData);
 			final int width = imageInfo.getBufferedImage().getWidth();
 			if (maxSize < width) {

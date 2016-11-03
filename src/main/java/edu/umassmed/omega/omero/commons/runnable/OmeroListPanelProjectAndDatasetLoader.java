@@ -89,7 +89,7 @@ public class OmeroListPanelProjectAndDatasetLoader implements Runnable {
 				this.projectLoaded++;
 			}
 		} catch (final ServerError ex) {
-			OmegaLogFileManager.handleUncaughtException(ex);
+			OmegaLogFileManager.handleUncaughtException(ex, true);
 		}
 
 		this.updateLoadingStatus(this.projectLoaded);
@@ -119,7 +119,7 @@ public class OmeroListPanelProjectAndDatasetLoader implements Runnable {
 				}
 			});
 		} catch (final InvocationTargetException | InterruptedException ex) {
-			OmegaLogFileManager.handleUncaughtException(ex);
+			OmegaLogFileManager.handleUncaughtException(ex, true);
 		}
 	}
 }

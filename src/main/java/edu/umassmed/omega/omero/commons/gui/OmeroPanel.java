@@ -456,7 +456,8 @@ OmeroAbstractBrowserInterface {
 		try {
 			this.statusPanel.updateStatus(0, s);
 		} catch (final OmegaPluginExceptionStatusPanel ex) {
-			OmegaLogFileManager.handlePluginException(this.getPlugin(), ex);
+			OmegaLogFileManager.handlePluginException(this.getPlugin(), ex,
+					true);
 		}
 	}
 
@@ -465,7 +466,8 @@ OmeroAbstractBrowserInterface {
 		try {
 			this.statusPanel.updateStatus(0, evt.getMessage());
 		} catch (final OmegaPluginExceptionStatusPanel ex) {
-			OmegaLogFileManager.handlePluginException(this.getPlugin(), ex);
+			OmegaLogFileManager.handlePluginException(this.getPlugin(), ex,
+			        true);
 		}
 		if (evt instanceof OmeroThumbnailMessageEvent) {
 			this.setBrowsingImages(((OmeroThumbnailMessageEvent) evt)

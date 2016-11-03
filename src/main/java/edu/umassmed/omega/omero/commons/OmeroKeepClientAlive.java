@@ -60,7 +60,7 @@ class OmeroKeepClientAlive implements Runnable {
 				this.gateway.keepSessionAlive();
 			}
 		} catch (final Exception ex) {
-			OmegaLogFileManager.handleUncaughtException(ex);
+			OmegaLogFileManager.handleUncaughtException(ex, true);
 			// TODO handle differently
 		}
 	}
