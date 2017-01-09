@@ -9,6 +9,15 @@ import java.util.Set;
 
 import javax.swing.RootPaneContainer;
 
+import omero.ServerError;
+import pojos.ChannelData;
+import pojos.DatasetData;
+import pojos.ExperimenterData;
+import pojos.GroupData;
+import pojos.ImageData;
+import pojos.PixelsData;
+import pojos.ProjectData;
+import edu.umassmed.omega.commons.OmegaLogFileManager;
 import edu.umassmed.omega.commons.data.OmegaData;
 import edu.umassmed.omega.commons.data.coreElements.OmegaDataset;
 import edu.umassmed.omega.commons.data.coreElements.OmegaElement;
@@ -23,12 +32,6 @@ import edu.umassmed.omega.omero.commons.data.OmeroExperimenterWrapper;
 import edu.umassmed.omega.omero.commons.data.OmeroGroupWrapper;
 import edu.umassmed.omega.omero.commons.data.OmeroImageWrapper;
 import edu.umassmed.omega.omero.commons.data.OmeroServerInformation;
-import pojos.DatasetData;
-import pojos.ExperimenterData;
-import pojos.GroupData;
-import pojos.ImageData;
-import pojos.PixelsData;
-import pojos.ProjectData;
 
 public class OmeroImporterUtilities {
 
@@ -49,8 +52,7 @@ public class OmeroImporterUtilities {
 
 	public static List<OmeroGroupWrapper> getGroupWrapper(
 			final OmeroGateway gateway) {
-		final List<OmeroGroupWrapper> groupsWrapperList = new
-				ArrayList<OmeroGroupWrapper>();
+		final List<OmeroGroupWrapper> groupsWrapperList = new ArrayList<OmeroGroupWrapper>();
 		List<GroupData> groupsData;
 		try {
 			groupsData = gateway.getGroups();
@@ -66,23 +68,19 @@ public class OmeroImporterUtilities {
 		return groupsWrapperList;
 	}
 
-	public static Map<OmeroGroupWrapper, List<OmeroExperimenterWrapper>>  getGroupLeaders(
+	public static Map<OmeroGroupWrapper, List<OmeroExperimenterWrapper>> getGroupLeaders(
 			final List<OmeroGroupWrapper> groupWrapperList) {
-		final Map<OmeroGroupWrapper, List<OmeroExperimenterWrapper>>
-		groupLeadersMap = new LinkedHashMap<OmeroGroupWrapper,
-		List<OmeroExperimenterWrapper>>();
+		final Map<OmeroGroupWrapper, List<OmeroExperimenterWrapper>> groupLeadersMap = new LinkedHashMap<OmeroGroupWrapper, List<OmeroExperimenterWrapper>>();
 
 		for (final OmeroGroupWrapper groupDataWrapper : groupWrapperList) {
-			final List<OmeroExperimenterWrapper> leaderWrapperList = new
-					ArrayList<OmeroExperimenterWrapper>();
+			final List<OmeroExperimenterWrapper> leaderWrapperList = new ArrayList<OmeroExperimenterWrapper>();
 			final GroupData groupData = groupDataWrapper.getGroupData();
 
 			final Set<ExperimenterData> leadersData = groupData.getLeaders();
 
 			for (final ExperimenterData leaderData : leadersData) {
-				final OmeroExperimenterWrapper leaderWrapper = new
-						OmeroExperimenterWrapper(
-								leaderData);
+				final OmeroExperimenterWrapper leaderWrapper = new OmeroExperimenterWrapper(
+						leaderData);
 				leaderWrapperList.add(leaderWrapper);
 			}
 			groupLeadersMap.put(groupDataWrapper, leaderWrapperList);
@@ -293,13 +291,28 @@ public class OmeroImporterUtilities {
 				continue;
 			}
 
+			final Map<Integer, String> channelNames = new LinkedHashMap<Integer, String>();
+			List<ChannelData> channels = null;
+			try {
+				channels = gateway.getChannels(pixelsData);
+			} catch (final ServerError ex) {
+				OmegaLogFileManager.handleUncaughtException(ex, false);
+			}
+			if (channels != null) {
+				for (final ChannelData chan : channels) {
+					channelNames.put(chan.getIndex(), chan.getName());
+				}
+			}
+
 			final OmegaImagePixels pixels = new OmegaImagePixels(
 					pixelsData.getPixelType(), pixelsData.getSizeX(),
 					pixelsData.getSizeY(), pixelsData.getSizeZ(),
 					pixelsData.getSizeC(), pixelsData.getSizeT(),
 					pixelsData.getPixelSizeX(), pixelsData.getPixelSizeY(),
-					pixelsData.getPixelSizeZ());
+					pixelsData.getPixelSizeZ(), channelNames);
 			pixels.setOmeroId(pixelsData.getId());
+			final int defaultT = gateway.getDefaultT(pixelsData.getId());
+			pixels.setSelectedT(defaultT);
 			final int defaultZ = gateway.getDefaultZ(pixelsData.getId());
 			pixels.setSelectedZ(defaultZ);
 			for (int i = 0; i < pixelsData.getSizeC(); i++) {
