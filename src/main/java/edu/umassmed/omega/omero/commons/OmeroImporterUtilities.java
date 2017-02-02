@@ -1,6 +1,7 @@
 package edu.umassmed.omega.omero.commons;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -331,10 +332,14 @@ public class OmeroImporterUtilities {
 						expData.getLastName());
 				exp.setOmeroId(expData.getId());
 			}
-			final Date acquisitionDate = new Date(imageData
-					.getAcquisitionDate().getTime());
-			final Date importedDate = new Date(imageData.getInserted()
-					.getTime());
+			final long acquisition = imageData.getAcquisitionDate().getTime();
+			final Calendar acqui = Calendar.getInstance();
+			acqui.setTimeInMillis(acquisition);
+			final Date acquisitionDate = acqui.getTime();
+			final long importation = imageData.getInserted().getTime();
+			final Calendar impor = Calendar.getInstance();
+			impor.setTimeInMillis(importation);
+			final Date importedDate = impor.getTime();
 			// put exp instead of experimenter
 			image = new OmegaImage(imageData.getName(), exp, acquisitionDate,
 					importedDate, pixelsList);
@@ -412,25 +417,25 @@ public class OmeroImporterUtilities {
 			final int error) {
 		String errorMsg = null;
 		switch (error) {
-		case 0:
-			break;
-		case 1:
-			errorMsg = "Unable to create a session.";
-			break;
-		case 2:
-			errorMsg = "<html>Access denied.<br>Verify username and/or password.</html>";
-			break;
-		case 3:
-			errorMsg = "Server error.";
-			break;
-		case 4:
-			errorMsg = "<html>Unable to find the server<br>Verify server address.</html>";
-			break;
-		case 5:
-			errorMsg = "<html>Server refused the connection.<br>Verify port.</html>";
-			break;
-		default:
-			errorMsg = "Unknown error.";
+			case 0:
+				break;
+			case 1:
+				errorMsg = "Unable to create a session.";
+				break;
+			case 2:
+				errorMsg = "<html>Access denied.<br>Verify username and/or password.</html>";
+				break;
+			case 3:
+				errorMsg = "Server error.";
+				break;
+			case 4:
+				errorMsg = "<html>Unable to find the server<br>Verify server address.</html>";
+				break;
+			case 5:
+				errorMsg = "<html>Server refused the connection.<br>Verify port.</html>";
+				break;
+			default:
+				errorMsg = "Unknown error.";
 		}
 		if (errorMsg != null) {
 			final GenericMessageDialog errorDialog = new GenericMessageDialog(

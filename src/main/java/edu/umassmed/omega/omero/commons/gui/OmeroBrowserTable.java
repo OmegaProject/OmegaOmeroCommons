@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -110,21 +111,23 @@ public class OmeroBrowserTable extends JTable implements TableModelListener,
 			String date = OmeroPluginGUIConstants.BROWSER_UNKNOWN;
 			try {
 				final Timestamp ts = imageInfo.getImage().getAcquisitionDate();
+				final Calendar start = Calendar.getInstance();
+				start.setTimeInMillis(ts.getTime());
 				if (ts != null) {
-					date = format.format(ts);
+					date = format.format(start.getTime());
 				}
 			} catch (final IllegalStateException ex) {
 				OmegaLogFileManager.handleUncaughtException(ex, false);
 			}
-			final String sizeXY = (imageInfo.getImage().getSizeX() != -1 ? String
-			        .valueOf(imageInfo.getImage().getSizeX())
+			final String sizeXY = (imageInfo.getImage().getSizeX() != -1
+					? String.valueOf(imageInfo.getImage().getSizeX())
 			        : OmeroPluginGUIConstants.BROWSER_UNKNOWN)
 			        + " x "
 			        + (imageInfo.getImage().getSizeY() != -1 ? String
 			                .valueOf(imageInfo.getImage().getSizeY())
 			                : OmeroPluginGUIConstants.BROWSER_UNKNOWN);
-			final String sizeZTC = (imageInfo.getImage().getSizeZ() != -1 ? String
-			        .valueOf(imageInfo.getImage().getSizeZ())
+			final String sizeZTC = (imageInfo.getImage().getSizeZ() != -1
+					? String.valueOf(imageInfo.getImage().getSizeZ())
 			        : OmeroPluginGUIConstants.BROWSER_UNKNOWN)
 			        + " x "
 			        + (imageInfo.getImage().getSizeT() != -1 ? String
@@ -211,9 +214,9 @@ public class OmeroBrowserTable extends JTable implements TableModelListener,
 	}
 
 	private void handleSelection() {
-		for (final int i : this.getSelectedRows()) {
-			System.out.println(i);
-		}
+		// for (final int i : this.getSelectedRows()) {
+		// System.out.println(i);
+		// }
 	}
 
 	@Override
@@ -242,11 +245,11 @@ public class OmeroBrowserTable extends JTable implements TableModelListener,
 					// label.setEnabled(false);
 				}
 				switch (column) {
-				case 1:
-					label.setIcon(new ImageIcon((BufferedImage) value));
-					label.setText("");
-					label.setToolTipText(imageInfo.getImageName());
-					break;
+					case 1:
+						label.setIcon(new ImageIcon((BufferedImage) value));
+						label.setText("");
+						label.setToolTipText(imageInfo.getImageName());
+						break;
 				}
 				return label;
 			}
