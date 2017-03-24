@@ -1,29 +1,28 @@
 /*******************************************************************************
- * Copyright (C) 2014 University of Massachusetts Medical School
- * Alessandro Rigano (Program in Molecular Medicine)
- * Caterina Strambio De Castillia (Program in Molecular Medicine)
+ * Copyright (C) 2014 University of Massachusetts Medical School Alessandro
+ * Rigano (Program in Molecular Medicine) Caterina Strambio De Castillia
+ * (Program in Molecular Medicine)
  *
  * Created by the Open Microscopy Environment inteGrated Analysis (OMEGA) team:
  * Alex Rigano, Caterina Strambio De Castillia, Jasmine Clark, Vanni Galli,
  * Raffaello Giulietti, Loris Grossi, Eric Hunter, Tiziano Leidi, Jeremy Luban,
  * Ivo Sbalzarini and Mario Valle.
  *
- * Key contacts:
- * Caterina Strambio De Castillia: caterina.strambio@umassmed.edu
+ * Key contacts: Caterina Strambio De Castillia: caterina.strambio@umassmed.edu
  * Alex Rigano: alex.rigano@umassmed.edu
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
 package edu.umassmed.omega.omero.commons;
 
@@ -319,13 +318,14 @@ public class OmeroGateway extends OmegaGateway {
 	 * @param loginCred
 	 *            Host the information to connect.
 	 * @return <code>true</code> if connected, <code>false</code>
+	 * @throws Exception
 	 * @throws ServerError
 	 * @throws PermissionDeniedException
 	 * @throws CannotCreateSessionException
 	 */
 	@Override
 	public int connect(final OmegaLoginCredentials loginCred,
-			final OmegaServerInformation serverInfo) {
+			final OmegaServerInformation serverInfo) throws Exception {
 		// TODO check with cases should throw exception and what shouldn't
 		this.setConnected(false);
 		if (this.secureClient == null) {
@@ -365,7 +365,7 @@ public class OmeroGateway extends OmegaGateway {
 		return 0;
 	}
 
-	public void disconnect() {
+	public void disconnect() throws Exception {
 		if (this.executor != null) {
 			this.executor.shutdown();
 		}
@@ -445,7 +445,7 @@ public class OmeroGateway extends OmegaGateway {
 	// }
 
 	public List<DatasetData> getDatasets(final ProjectData project)
-			throws ServerError {
+			throws Exception {
 		final List<DatasetData> datasets = new ArrayList<DatasetData>();
 		final ParametersI po = new ParametersI();
 		// po.add(Project.class.getName(), omero.rtypes.rlong(project.getId()));
@@ -473,7 +473,7 @@ public class OmeroGateway extends OmegaGateway {
 	}
 
 	public List<ChannelData> getChannels(final PixelsData pixels)
-	        throws ServerError {
+			throws Exception {
 		new ArrayList<ChannelData>();
 		final ParametersI po = new ParametersI();
 		// po.add(Project.class.getName(), omero.rtypes.rlong(project.getId()));
@@ -493,7 +493,7 @@ public class OmeroGateway extends OmegaGateway {
 	}
 
 	public List<ProjectData> getProjects(final ExperimenterData user)
-			throws ServerError {
+			throws Exception {
 		final List<ProjectData> projects = new ArrayList<ProjectData>();
 		final ParametersI po = new ParametersI();
 		po.exp(omero.rtypes.rlong(user.getId()));
@@ -511,14 +511,14 @@ public class OmeroGateway extends OmegaGateway {
 		return projects;
 	}
 
-	public ExperimenterData getExperimenter() throws ServerError {
+	public ExperimenterData getExperimenter() throws Exception {
 		final IAdminPrx service = this.getAdminService();
 		final Long expId = service.getEventContext().userId;
 		final Experimenter exp = service.getExperimenter(expId);
 		return new ExperimenterData(exp);
 	}
 
-	public List<GroupData> getGroups() throws ServerError {
+	public List<GroupData> getGroups() throws Exception {
 		final List<GroupData> dataGroups = new ArrayList<GroupData>();
 		List<ExperimenterGroup> groups = new ArrayList<ExperimenterGroup>();
 		final IAdminPrx service = this.getAdminService();
@@ -532,7 +532,7 @@ public class OmeroGateway extends OmegaGateway {
 	}
 
 	public List<ExperimenterData> getExperimenters(final GroupData group)
-			throws ServerError {
+			throws Exception {
 		final List<ExperimenterData> dataExps = new ArrayList<ExperimenterData>();
 		final IAdminPrx service = this.getAdminService();
 		final Long groupId = group.getId();
@@ -545,7 +545,7 @@ public class OmeroGateway extends OmegaGateway {
 	}
 
 	public RenderingEnginePrx getRenderingService(final Long pixelsID)
-			throws ServerError {
+			throws Exception {
 		RenderingEnginePrx service = (RenderingEnginePrx) this.reServices
 				.get(pixelsID);
 		if (service != null)
@@ -563,7 +563,7 @@ public class OmeroGateway extends OmegaGateway {
 	 * @throws ServerError
 	 */
 	public RenderingEnginePrx createRenderingService(final long pixelsID)
-			throws ServerError {
+			throws Exception {
 		final RenderingEnginePrx service = this.createRenderingService();
 		this.reServices.put(pixelsID, service);
 		service.lookupPixels(pixelsID);
@@ -634,7 +634,7 @@ public class OmeroGateway extends OmegaGateway {
 
 	@Override
 	public synchronized byte[] getImageData(final Long pixelsID, final int z,
-			final int t, final int c) {
+			final int t, final int c) throws Exception {
 		RawPixelsStorePrx service = null;
 		try {
 			service = this.entryEncrypted.createRawPixelsStore();
@@ -663,7 +663,7 @@ public class OmeroGateway extends OmegaGateway {
 
 	// TODO check if used
 	@Override
-	public int getByteWidth(final Long pixelsID) {
+	public int getByteWidth(final Long pixelsID) throws Exception {
 		RawPixelsStorePrx service = null;
 		try {
 			service = this.entryEncrypted.createRawPixelsStore();
@@ -685,7 +685,7 @@ public class OmeroGateway extends OmegaGateway {
 
 	@Override
 	public double getDeltaT(final Long pixelsID, final int z, final int t,
-			final int channel) {
+			final int channel) throws Exception {
 		// GLogManager.log("maxT is: " + maxT);
 
 		double sizeT = 0.0;
@@ -746,7 +746,8 @@ public class OmeroGateway extends OmegaGateway {
 	}
 
 	@Override
-	public int[] renderAsPackedInt(final Long pixelsID, final int t, final int z) {
+	public int[] renderAsPackedInt(final Long pixelsID, final int t, final int z)
+			throws Exception {
 		try {
 			final RenderingEnginePrx engine = this
 					.getRenderingService(pixelsID);
@@ -766,21 +767,22 @@ public class OmeroGateway extends OmegaGateway {
 	}
 
 	@Override
-	public int[] renderAsPackedInt(final Long pixelsID) {
+	public int[] renderAsPackedInt(final Long pixelsID) throws Exception {
 		try {
 			final RenderingEnginePrx engine = this
 					.getRenderingService(pixelsID);
 			return this.renderAsPackedInt(pixelsID, engine.getDefaultT(),
 					engine.getDefaultZ());
-		} catch (final ServerError ex) {
+		} catch (final Exception ex) {
 			// TODO handle differently
-			OmegaLogFileManager.handleUncaughtException(ex, true);
+			OmegaLogFileManager.handleCoreException(ex, true);
 			return null;
 		}
 	}
 
 	@Override
-	public byte[] renderCompressed(final Long pixelsID, final int t, final int z) {
+	public byte[] renderCompressed(final Long pixelsID, final int t, final int z)
+			throws Exception {
 		try {
 			final RenderingEnginePrx engine = this
 					.getRenderingService(pixelsID);
@@ -801,22 +803,22 @@ public class OmeroGateway extends OmegaGateway {
 	}
 
 	@Override
-	public byte[] renderCompressed(final Long pixelsID) {
+	public byte[] renderCompressed(final Long pixelsID) throws Exception {
 		try {
 			final RenderingEnginePrx engine = this
 					.getRenderingService(pixelsID);
 			return this.renderCompressed(pixelsID, engine.getDefaultT(),
 					engine.getDefaultZ());
-		} catch (final ServerError ex) {
+		} catch (final Exception ex) {
 			// TODO handle differently
-			OmegaLogFileManager.handleUncaughtException(ex, true);
+			OmegaLogFileManager.handleCoreException(ex, true);
 			return null;
 		}
 	}
 
 	@Override
 	public Double computeSizeT(final Long pixelsID, final int sizeT,
-			final int currentMaxT) {
+			final int currentMaxT) throws Exception {
 		Double physicalSizeT = null;
 		final int maxT = currentMaxT - 1;
 		try {
@@ -841,7 +843,7 @@ public class OmeroGateway extends OmegaGateway {
 
 	@Override
 	public void setActiveChannel(final Long pixelsID, final int channel,
-			final boolean active) {
+			final boolean active) throws Exception {
 		try {
 			final RenderingEnginePrx engine = this
 					.getRenderingService(pixelsID);
@@ -853,7 +855,7 @@ public class OmeroGateway extends OmegaGateway {
 	}
 
 	@Override
-	public void setDefaultZ(final Long pixelsID, final int z) {
+	public void setDefaultZ(final Long pixelsID, final int z) throws Exception {
 		try {
 			final RenderingEnginePrx engine = this
 					.getRenderingService(pixelsID);
@@ -864,7 +866,7 @@ public class OmeroGateway extends OmegaGateway {
 	}
 
 	@Override
-	public int getDefaultZ(final Long pixelsID) {
+	public int getDefaultZ(final Long pixelsID) throws Exception {
 		try {
 			final RenderingEnginePrx engine = this
 					.getRenderingService(pixelsID);
@@ -877,7 +879,7 @@ public class OmeroGateway extends OmegaGateway {
 	}
 
 	@Override
-	public void setDefaultT(final Long pixelsID, final int t) {
+	public void setDefaultT(final Long pixelsID, final int t) throws Exception {
 		try {
 			final RenderingEnginePrx engine = this
 					.getRenderingService(pixelsID);
@@ -889,7 +891,7 @@ public class OmeroGateway extends OmegaGateway {
 	}
 
 	@Override
-	public int getDefaultT(final Long pixelsID) {
+	public int getDefaultT(final Long pixelsID) throws Exception {
 		try {
 			final RenderingEnginePrx engine = this
 					.getRenderingService(pixelsID);
@@ -902,7 +904,8 @@ public class OmeroGateway extends OmegaGateway {
 	}
 
 	@Override
-	public void setCompressionLevel(final Long pixelsID, final float compression) {
+	public void setCompressionLevel(final Long pixelsID, final float compression)
+			throws Exception {
 		try {
 			final RenderingEnginePrx engine = this
 					.getRenderingService(pixelsID);
