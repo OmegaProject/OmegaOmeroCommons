@@ -71,8 +71,6 @@ import pojos.PixelsData;
 import pojos.ProjectData;
 import Glacier2.CannotCreateSessionException;
 import Glacier2.PermissionDeniedException;
-import Ice.ConnectionRefusedException;
-import Ice.DNSException;
 import edu.umassmed.omega.commons.OmegaLogFileManager;
 import edu.umassmed.omega.commons.data.imageDBConnectionElements.OmegaGateway;
 import edu.umassmed.omega.commons.data.imageDBConnectionElements.OmegaLoginCredentials;
@@ -83,55 +81,55 @@ import edu.umassmed.omega.commons.data.imageDBConnectionElements.OmegaServerInfo
  * services alive.
  */
 public class OmeroGateway extends OmegaGateway {
-
+	
 	/**
 	 * The maximum number of thumbnails retrieved before restarting the
 	 * thumbnails service.
 	 */
 	private static final int MAX_RETRIEVAL = 100;
-
+	
 	/** Keeps the client's session alive. */
 	private ScheduledThreadPoolExecutor executor;
-
+	
 	/**
 	 * The Blitz client object, this is the entry point to the OMERO Server
 	 * using a secure connection.
 	 */
 	private client secureClient;
 	private OmeroKeepClientAlive kca;
-
+	
 	/**
 	 * The entry point provided by the connection library to access the various
 	 * <i>OMERO</i> services.
 	 */
 	private ServiceFactoryPrx entryEncrypted;
-
+	
 	/** Collection of services to keep alive. */
 	private final List<ServiceInterfacePrx> services;
-
+	
 	/** Collection of services to keep alive. */
 	private final Map<Long, StatefulServiceInterfacePrx> reServices;
-
+	
 	/** The container service. */
 	private IContainerPrx containerService;
-
+	
 	/** The Admin service. */
 	private IAdminPrx adminService;
-
+	
 	/** The thumbnail service. */
 	private ThumbnailStorePrx thumbnailService;
-
+	
 	private IPixelsPrx pixelsService;
-
+	
 	/**
 	 * The number of thumbnails already retrieved. Resets to <code>0</code> when
 	 * the value equals {@link #MAX_RETRIEVAL}.
 	 */
 	private int thumbnailRetrieval;
-
+	
 	/** Flag indicating if you are connected or not. */
 	private boolean isConnected;
-
+	
 	/**
 	 * Creates a <code>BufferedImage</code> from the passed array of bytes.
 	 *
@@ -150,10 +148,10 @@ public class OmeroGateway extends OmegaGateway {
 		} catch (final Exception e) {
 			// TODO ManageException
 		}
-
+		
 		return null;
 	}
-
+	
 	/**
 	 * Returns the {@link ThumbnailStorePrx} service.
 	 *
@@ -186,11 +184,11 @@ public class OmeroGateway extends OmegaGateway {
 			// TODO handle differently
 			OmegaLogFileManager.handleUncaughtException(ex, true);
 		}
-
+		
 		// TODO Manage Null Case
 		return null;
 	}
-
+	
 	/**
 	 * Returns the {@link IContainerPrx} service.
 	 *
@@ -213,11 +211,11 @@ public class OmeroGateway extends OmegaGateway {
 			// TODO handle differently
 			OmegaLogFileManager.handleUncaughtException(ex, true);
 		}
-
+		
 		// TODO Manage Null Case
 		return null;
 	}
-
+	
 	private IPixelsPrx getPixelsService() {
 		try {
 			if (this.pixelsService == null) {
@@ -229,11 +227,11 @@ public class OmeroGateway extends OmegaGateway {
 			// TODO handle differently
 			OmegaLogFileManager.handleUncaughtException(ex, true);
 		}
-
+		
 		// TODO Manage Null Case
 		return null;
 	}
-
+	
 	/**
 	 * Returns the {@link IAdminPrx} service.
 	 *
@@ -250,11 +248,11 @@ public class OmeroGateway extends OmegaGateway {
 			// TODO handle differently
 			OmegaLogFileManager.handleUncaughtException(ex, true);
 		}
-
+		
 		// TODO Manage Null Case
 		return null;
 	}
-
+	
 	/**
 	 * Returns the {@link RenderingEnginePrx Rendering service}.
 	 *
@@ -274,22 +272,22 @@ public class OmeroGateway extends OmegaGateway {
 			// TODO handle differently
 			OmegaLogFileManager.handleUncaughtException(ex, true);
 		}
-
+		
 		// TODO Manage Null Case
 		return null;
 	}
-
+	
 	/** Creates a new instance. */
 	public OmeroGateway() {
 		this.isConnected = false;
 		this.services = new ArrayList<ServiceInterfacePrx>();
 		this.reServices = new HashMap<Long, StatefulServiceInterfacePrx>();
 	}
-
+	
 	public client getClient() {
 		return this.secureClient;
 	}
-
+	
 	/** Keeps the services alive. */
 	protected void keepSessionAlive() {
 		final int n = this.services.size() + this.reServices.size();
@@ -311,7 +309,7 @@ public class OmeroGateway extends OmegaGateway {
 			// Handle exception. Here
 		}
 	}
-
+	
 	/**
 	 * Logs in. otherwise.
 	 *
@@ -324,7 +322,7 @@ public class OmeroGateway extends OmegaGateway {
 	 * @throws CannotCreateSessionException
 	 */
 	@Override
-	public int connect(final OmegaLoginCredentials loginCred,
+	public void connect(final OmegaLoginCredentials loginCred,
 			final OmegaServerInformation serverInfo) throws Exception {
 		// TODO check with cases should throw exception and what shouldn't
 		this.setConnected(false);
@@ -332,39 +330,22 @@ public class OmeroGateway extends OmegaGateway {
 			this.secureClient = new client(serverInfo.getHostName(),
 					serverInfo.getPort());
 		}
-
-		int error = 0;
+		
 		try {
 			this.entryEncrypted = this.secureClient.createSession(
 					loginCred.getUserName(), loginCred.getPassword());
-		} catch (final CannotCreateSessionException ex) {
-			error = 1;
-		} catch (final PermissionDeniedException ex) {
-			error = 2;
-		} catch (final ServerError ex) {
-			error = 3;
-		} catch (final DNSException ex) {
-			error = 4;
-		} catch (final ConnectionRefusedException ex) {
-			error = 5;
 		} catch (final Exception ex) {
-			OmegaLogFileManager.handleUncaughtException(ex, true);
-			error = -1;
-		}
-
-		if (error != 0) {
 			this.disconnect();
-			return error;
+			throw ex;
 		}
-
+		
 		this.setConnected(true);
 		this.kca = new OmeroKeepClientAlive(this);
 		this.executor = new ScheduledThreadPoolExecutor(1);
 		this.executor
-		.scheduleWithFixedDelay(this.kca, 60, 60, TimeUnit.SECONDS);
-		return 0;
+				.scheduleWithFixedDelay(this.kca, 60, 60, TimeUnit.SECONDS);
 	}
-
+	
 	public void disconnect() throws Exception {
 		if (this.executor != null) {
 			this.executor.shutdown();
@@ -377,73 +358,13 @@ public class OmeroGateway extends OmegaGateway {
 		this.containerService = null;
 		this.services.clear();
 		this.reServices.clear();
-
+		
 		this.entryEncrypted = null;
-
+		
 		this.secureClient.closeSession();
 		this.secureClient = null;
 	}
-
-	// TODO Check if needed
-	// /**
-	// * Returns the images owned by the user currently logged in. We use the
-	// * <code>Pojo</code> objects so we don't have to deal directly with the
-	// * rtypes.
-	// *
-	// * @return See above.
-	// */
-	// public List<ImageData> getImages() throws Exception {
-	// final List<ImageData> images = new ArrayList<ImageData>();
-	// try {
-	// final ParametersI po = new ParametersI();
-	// po.exp(omero.rtypes
-	// .rlong(this.getAdminService().getEventContext().userId));
-	// final IContainerPrx service = this.getContainerService();
-	// final List<Image> l = service.getUserImages(po);
-	// // stop here if you want to deal with IObject.
-	// if (l == null)
-	// return images;
-	// final Iterator<Image> i = l.iterator();
-	// while (i.hasNext()) {
-	// images.add(new ImageData(i.next()));
-	// }
-	// } catch (final Exception e) {
-	// // TODO Manage exception
-	// new Exception("Cannot retrieve the images", e);
-	// }
-	// return images;
-	// }
-
-	// public List<ImageData> getImages(final DatasetData dataset, List<Long>
-	// ids)
-	// throws ServerError {
-	// final List<ImageData> images = new ArrayList<ImageData>();
-	// final ParametersI po = new ParametersI();
-	// // po.add(Project.class.getName(), omero.rtypes.rlong(project.getId()));
-	// // po.leaves();
-	//
-	// if (ids == null) {
-	// ids = new ArrayList<Long>();
-	// final Set<ImageData> set = dataset.getImages();
-	// for (final ImageData obj : set) {
-	// ids.add(obj.getId());
-	// }
-	// }
-	//
-	// final IContainerPrx service = this.getContainerService();
-	// final List<Image> objects = service.getImages(Image.class.getName(),
-	// ids, po);
-	// if (objects == null)
-	// return images;
-	//
-	// final Iterator<Image> i = objects.iterator();
-	// while (i.hasNext()) {
-	// images.add(new ImageData(i.next()));
-	// }
-	//
-	// return images;
-	// }
-
+	
 	public List<DatasetData> getDatasets(final ProjectData project)
 			throws Exception {
 		final List<DatasetData> datasets = new ArrayList<DatasetData>();
@@ -451,27 +372,27 @@ public class OmeroGateway extends OmegaGateway {
 		// po.add(Project.class.getName(), omero.rtypes.rlong(project.getId()));
 		po.exp(omero.rtypes.rlong(project.getOwner().getId()));
 		po.leaves();
-
+		
 		final List<Long> ids = new ArrayList<Long>();
 		final Set<DatasetData> set = project.getDatasets();
 		for (final DatasetData obj : set) {
 			ids.add(obj.getId());
 		}
-
+		
 		final IContainerPrx service = this.getContainerService();
 		final List<IObject> objects = service.loadContainerHierarchy(
 				Dataset.class.getName(), ids, po);
 		if (objects == null)
 			return datasets;
-
+		
 		final Iterator<IObject> i = objects.iterator();
 		while (i.hasNext()) {
 			datasets.add(new DatasetData((Dataset) i.next()));
 		}
-
+		
 		return datasets;
 	}
-
+	
 	public List<ChannelData> getChannels(final PixelsData pixels)
 			throws Exception {
 		new ArrayList<ChannelData>();
@@ -479,19 +400,19 @@ public class OmeroGateway extends OmegaGateway {
 		// po.add(Project.class.getName(), omero.rtypes.rlong(project.getId()));
 		po.exp(omero.rtypes.rlong(pixels.getId()));
 		po.leaves();
-
+		
 		final Pixels pix = this.getPixelsService().retrievePixDescription(
 				pixels.getId());
-
+		
 		final List<ChannelData> channels = new ArrayList<ChannelData>();
 		final List<Channel> l = pix.copyChannels();
 		for (int i = 0; i < l.size(); i++) {
 			channels.add(new ChannelData(i, l.get(i)));
 		}
-
+		
 		return channels;
 	}
-
+	
 	public List<ProjectData> getProjects(final ExperimenterData user)
 			throws Exception {
 		final List<ProjectData> projects = new ArrayList<ProjectData>();
@@ -504,20 +425,20 @@ public class OmeroGateway extends OmegaGateway {
 		if (objects == null)
 			return projects;
 		final Iterator<IObject> i = objects.iterator();
-
+		
 		while (i.hasNext()) {
 			projects.add(new ProjectData((Project) i.next()));
 		}
 		return projects;
 	}
-
+	
 	public ExperimenterData getExperimenter() throws Exception {
 		final IAdminPrx service = this.getAdminService();
 		final Long expId = service.getEventContext().userId;
 		final Experimenter exp = service.getExperimenter(expId);
 		return new ExperimenterData(exp);
 	}
-
+	
 	public List<GroupData> getGroups() throws Exception {
 		final List<GroupData> dataGroups = new ArrayList<GroupData>();
 		List<ExperimenterGroup> groups = new ArrayList<ExperimenterGroup>();
@@ -530,7 +451,7 @@ public class OmeroGateway extends OmegaGateway {
 		}
 		return dataGroups;
 	}
-
+	
 	public List<ExperimenterData> getExperimenters(final GroupData group)
 			throws Exception {
 		final List<ExperimenterData> dataExps = new ArrayList<ExperimenterData>();
@@ -543,7 +464,7 @@ public class OmeroGateway extends OmegaGateway {
 		}
 		return dataExps;
 	}
-
+	
 	public RenderingEnginePrx getRenderingService(final Long pixelsID)
 			throws Exception {
 		RenderingEnginePrx service = (RenderingEnginePrx) this.reServices
@@ -553,7 +474,7 @@ public class OmeroGateway extends OmegaGateway {
 		service = this.createRenderingService(pixelsID);
 		return service;
 	}
-
+	
 	/**
 	 * Loads the rendering control corresponding to the specified set of pixels.
 	 *
@@ -576,7 +497,7 @@ public class OmeroGateway extends OmegaGateway {
 		service.load();
 		return service;
 	}
-
+	
 	/**
 	 * Retrieves the specified images.
 	 *
@@ -592,125 +513,94 @@ public class OmeroGateway extends OmegaGateway {
 			final int max) throws Exception {
 		final List<BufferedImage> images = new ArrayList<BufferedImage>();
 
-		try {
-			final ThumbnailStorePrx service = this.getThumbnailService();
-			final Map<Long, byte[]> results = service
-					.getThumbnailByLongestSideSet(omero.rtypes.rint(max),
-							pixelsID);
+		final ThumbnailStorePrx service = this.getThumbnailService();
+		final Map<Long, byte[]> results = service.getThumbnailByLongestSideSet(
+				omero.rtypes.rint(max), pixelsID);
 
-			if (results == null)
-				return images;
-			Entry entry;
-			final Iterator i = results.entrySet().iterator();
-			BufferedImage image;
-			while (i.hasNext()) {
-				entry = (Entry) i.next();
-				try {
-					image = this.createImage((byte[]) entry.getValue());
-					if (image != null) {
-						images.add(image);
-					}
-				} catch (final Exception ex) {
-					// TODO handle differently
-					OmegaLogFileManager.handleUncaughtException(ex, true);
-				}
-			}
-
+		if (results == null)
 			return images;
-
-		} catch (final Throwable t) {
-			if (this.thumbnailService != null) {
-				try {
-					this.thumbnailService.close();
-				} catch (final Exception ex) {
-					// TODO handle differently
-					OmegaLogFileManager.handleUncaughtException(ex, true);
-				}
+		Entry entry;
+		final Iterator i = results.entrySet().iterator();
+		BufferedImage image;
+		while (i.hasNext()) {
+			entry = (Entry) i.next();
+			image = this.createImage((byte[]) entry.getValue());
+			if (image != null) {
+				images.add(image);
 			}
-			this.thumbnailService = null;
 		}
+
 		return images;
 	}
-
+	
 	@Override
 	public synchronized byte[] getImageData(final Long pixelsID, final int z,
 			final int t, final int c) throws Exception {
 		RawPixelsStorePrx service = null;
-		try {
-			service = this.entryEncrypted.createRawPixelsStore();
-		} catch (final ServerError ex) {
-			// TODO handle differently
-			OmegaLogFileManager.handleUncaughtException(ex, true);
-			return null;
-		}
-		try {
-			service.setPixelsId(pixelsID, false);
-
-			return service.getPlane(z, c, t);
-		} catch (final ServerError ex) {
-			// TODO handle differently
-			OmegaLogFileManager.handleUncaughtException(ex, true);
-			return null;
-		} finally {
-			try {
-				service.close();
-			} catch (final ServerError ex) {
-				// TODO handle differently
-				OmegaLogFileManager.handleUncaughtException(ex, true);
-			}
-		}
+		service = this.entryEncrypted.createRawPixelsStore();
+		service.setPixelsId(pixelsID, false);
+		
+		return service.getPlane(z, c, t);
 	}
-
+	
 	// TODO check if used
 	@Override
 	public int getByteWidth(final Long pixelsID) throws Exception {
 		RawPixelsStorePrx service = null;
-		try {
-			service = this.entryEncrypted.createRawPixelsStore();
-			service.setPixelsId(pixelsID, false);
-			return service.getByteWidth();
-		} catch (final ServerError ex) {
-			// TODO handle differently
-			OmegaLogFileManager.handleUncaughtException(ex, true);
-			return 2;
-		} finally {
-			try {
-				service.close();
-			} catch (final ServerError ex) {
-				// TODO handle differently
-				OmegaLogFileManager.handleUncaughtException(ex, true);
-			}
-		}
+		service = this.entryEncrypted.createRawPixelsStore();
+		service.setPixelsId(pixelsID, false);
+		return service.getByteWidth();
 	}
-
+	
 	@Override
 	public double getDeltaT(final Long pixelsID, final int z, final int t,
 			final int channel) throws Exception {
 		// GLogManager.log("maxT is: " + maxT);
-
+		
 		double sizeT = 0.0;
+		final List<IObject> planeInfoObjects = this.loadPlaneInfo(pixelsID, z,
+				t, channel);
 
+		if ((planeInfoObjects == null) || (planeInfoObjects.size() == 0))
+			return sizeT;
+
+		final PlaneInfoI pi = (PlaneInfoI) planeInfoObjects.get(0);
+
+		final Time tTemp = pi.getDeltaT();
+
+		if (tTemp != null) {
+			sizeT = tTemp.getValue();
+		}
+
+		return sizeT;
+	}
+	
+	// TODO to be removed because unused
+	@Override
+	public Double computeSizeT(final Long pixelsID, final int sizeT,
+			final int currentMaxT) throws Exception {
+		Double physicalSizeT = null;
+		final int maxT = currentMaxT - 1;
 		try {
 			final List<IObject> planeInfoObjects = this.loadPlaneInfo(pixelsID,
-					z, t - 1, channel);
-
-			if (planeInfoObjects.size() > 0) {
-				final PlaneInfoI pi = (PlaneInfoI) planeInfoObjects.get(0);
-
-				final Time tTemp = pi.getDeltaT();
-
-				if (tTemp != null) {
-					sizeT = tTemp.getValue();
-				}
+					0, maxT, 0);
+			if ((planeInfoObjects == null) || (planeInfoObjects.size() == 0))
+				return physicalSizeT;
+			
+			final PlaneInfoI pi = (PlaneInfoI) planeInfoObjects.get(0);
+			
+			final Time tTemp = pi.getDeltaT();
+			
+			if (tTemp != null) {
+				physicalSizeT = tTemp.getValue() / sizeT;
 			}
 		} catch (final Exception ex) {
 			// TODO handle differently
 			OmegaLogFileManager.handleUncaughtException(ex, true);
 		}
-
-		return sizeT;
+		return physicalSizeT;
 	}
-
+	
 	// TODO check if used
 	public List<IObject> loadPlaneInfo(final long pixelsID, final int z,
 			final int t, final int channel) throws Exception {
@@ -721,7 +611,7 @@ public class OmeroGateway extends OmegaGateway {
 		sb.append("select info from PlaneInfo as info ");
 		sb.append("where pixels.id =:id");
 		param.addLong("id", pixelsID);
-
+		
 		if (z >= 0) {
 			sb.append(" and info.theZ =:z");
 			param.map.put("z", omero.rtypes.rint(z));
@@ -739,188 +629,98 @@ public class OmeroGateway extends OmegaGateway {
 					param);
 			return info;
 		} catch (final Exception ex) {
-			// TODO create the proper exception here
 			throw new Exception("Cannot load the plane info for pixels: "
 					+ pixelsID, ex);
 		}
 	}
-
+	
 	@Override
 	public int[] renderAsPackedInt(final Long pixelsID, final int t, final int z)
 			throws Exception {
-		try {
-			final RenderingEnginePrx engine = this
-					.getRenderingService(pixelsID);
-			final PlaneDef planeDef = new PlaneDef();
-			// time choice (sliding)
-			planeDef.t = t;
-			// Z-plan choice
-			planeDef.z = z;
-			// display the XY plane
-			planeDef.slice = omero.romio.XY.value;
-
-			return engine.renderAsPackedInt(planeDef);
-		} catch (final ServerError ex) {
-			OmegaLogFileManager.handleUncaughtException(ex, true);
-			return null;
-		}
+		final RenderingEnginePrx engine = this.getRenderingService(pixelsID);
+		final PlaneDef planeDef = new PlaneDef();
+		// time choice (sliding)
+		planeDef.t = t;
+		// Z-plan choice
+		planeDef.z = z;
+		// display the XY plane
+		planeDef.slice = omero.romio.XY.value;
+		
+		return engine.renderAsPackedInt(planeDef);
 	}
-
+	
 	@Override
 	public int[] renderAsPackedInt(final Long pixelsID) throws Exception {
-		try {
-			final RenderingEnginePrx engine = this
-					.getRenderingService(pixelsID);
-			return this.renderAsPackedInt(pixelsID, engine.getDefaultT(),
-					engine.getDefaultZ());
-		} catch (final Exception ex) {
-			// TODO handle differently
-			OmegaLogFileManager.handleCoreException(ex, true);
-			return null;
-		}
+		final RenderingEnginePrx engine = this.getRenderingService(pixelsID);
+		return this.renderAsPackedInt(pixelsID, engine.getDefaultT(),
+				engine.getDefaultZ());
 	}
-
+	
 	@Override
 	public byte[] renderCompressed(final Long pixelsID, final int t, final int z)
 			throws Exception {
-		try {
-			final RenderingEnginePrx engine = this
-					.getRenderingService(pixelsID);
-			final PlaneDef planeDef = new PlaneDef();
-			// time choice (sliding)
-			planeDef.t = t;
-			// Z-plan choice
-			planeDef.z = z;
-			// display the XY plane
-			planeDef.slice = omero.romio.XY.value;
-
-			return engine.renderCompressed(planeDef);
-		} catch (final ServerError ex) {
-			// TODO handle differently
-			OmegaLogFileManager.handleUncaughtException(ex, true);
-			return null;
-		}
+		final RenderingEnginePrx engine = this.getRenderingService(pixelsID);
+		final PlaneDef planeDef = new PlaneDef();
+		// time choice (sliding)
+		planeDef.t = t;
+		// Z-plan choice
+		planeDef.z = z;
+		// display the XY plane
+		planeDef.slice = omero.romio.XY.value;
+		
+		return engine.renderCompressed(planeDef);
 	}
-
+	
 	@Override
 	public byte[] renderCompressed(final Long pixelsID) throws Exception {
-		try {
-			final RenderingEnginePrx engine = this
-					.getRenderingService(pixelsID);
-			return this.renderCompressed(pixelsID, engine.getDefaultT(),
-					engine.getDefaultZ());
-		} catch (final Exception ex) {
-			// TODO handle differently
-			OmegaLogFileManager.handleCoreException(ex, true);
-			return null;
-		}
+		final RenderingEnginePrx engine = this.getRenderingService(pixelsID);
+		return this.renderCompressed(pixelsID, engine.getDefaultT(),
+				engine.getDefaultZ());
 	}
-
-	@Override
-	public Double computeSizeT(final Long pixelsID, final int sizeT,
-			final int currentMaxT) throws Exception {
-		Double physicalSizeT = null;
-		final int maxT = currentMaxT - 1;
-		try {
-			final List<IObject> planeInfoObjects = this.loadPlaneInfo(pixelsID,
-					0, maxT, 0);
-			if ((planeInfoObjects == null) || (planeInfoObjects.size() == 0))
-				return physicalSizeT;
-
-			final PlaneInfoI pi = (PlaneInfoI) planeInfoObjects.get(0);
-
-			final Time tTemp = pi.getDeltaT();
-
-			if (tTemp != null) {
-				physicalSizeT = tTemp.getValue() / sizeT;
-			}
-		} catch (final Exception ex) {
-			// TODO handle differently
-			OmegaLogFileManager.handleUncaughtException(ex, true);
-		}
-		return physicalSizeT;
-	}
-
+	
 	@Override
 	public void setActiveChannel(final Long pixelsID, final int channel,
 			final boolean active) throws Exception {
-		try {
-			final RenderingEnginePrx engine = this
-					.getRenderingService(pixelsID);
-			engine.setActive(channel, active);
-		} catch (final ServerError ex) {
-			// TODO handle differently
-			OmegaLogFileManager.handleUncaughtException(ex, true);
-		}
+		final RenderingEnginePrx engine = this.getRenderingService(pixelsID);
+		engine.setActive(channel, active);
 	}
-
+	
 	@Override
 	public void setDefaultZ(final Long pixelsID, final int z) throws Exception {
-		try {
-			final RenderingEnginePrx engine = this
-					.getRenderingService(pixelsID);
-			engine.setDefaultZ(z);
-		} catch (final ServerError ex) {
-			OmegaLogFileManager.handleUncaughtException(ex, true);
-		}
+		final RenderingEnginePrx engine = this.getRenderingService(pixelsID);
+		engine.setDefaultZ(z);
 	}
-
+	
 	@Override
 	public int getDefaultZ(final Long pixelsID) throws Exception {
-		try {
-			final RenderingEnginePrx engine = this
-					.getRenderingService(pixelsID);
-			return engine.getDefaultZ();
-		} catch (final ServerError ex) {
-			// TODO handle differently
-			OmegaLogFileManager.handleUncaughtException(ex, true);
-			return -1;
-		}
+		final RenderingEnginePrx engine = this.getRenderingService(pixelsID);
+		return engine.getDefaultZ();
 	}
-
+	
 	@Override
 	public void setDefaultT(final Long pixelsID, final int t) throws Exception {
-		try {
-			final RenderingEnginePrx engine = this
-					.getRenderingService(pixelsID);
-			engine.setDefaultT(t);
-		} catch (final ServerError ex) {
-			// TODO handle differently
-			OmegaLogFileManager.handleUncaughtException(ex, true);
-		}
+		final RenderingEnginePrx engine = this.getRenderingService(pixelsID);
+		engine.setDefaultT(t);
 	}
-
+	
 	@Override
 	public int getDefaultT(final Long pixelsID) throws Exception {
-		try {
-			final RenderingEnginePrx engine = this
-					.getRenderingService(pixelsID);
-			return engine.getDefaultT();
-		} catch (final ServerError ex) {
-			// TODO handle differently
-			OmegaLogFileManager.handleUncaughtException(ex, true);
-			return -1;
-		}
+		final RenderingEnginePrx engine = this.getRenderingService(pixelsID);
+		return engine.getDefaultT();
 	}
-
+	
 	@Override
 	public void setCompressionLevel(final Long pixelsID, final float compression)
 			throws Exception {
-		try {
-			final RenderingEnginePrx engine = this
-					.getRenderingService(pixelsID);
-			engine.setCompressionLevel(compression);
-		} catch (final ServerError ex) {
-			// TODO handle differently
-			OmegaLogFileManager.handleUncaughtException(ex, true);
-		}
+		final RenderingEnginePrx engine = this.getRenderingService(pixelsID);
+		engine.setCompressionLevel(compression);
 	}
-
+	
 	@Override
 	public boolean isConnected() {
 		return this.isConnected;
 	}
-
+	
 	@Override
 	public void setConnected(final boolean isConnected) {
 		this.isConnected = isConnected;
