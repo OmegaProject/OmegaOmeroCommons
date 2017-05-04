@@ -1,29 +1,28 @@
 /*******************************************************************************
- * Copyright (C) 2014 University of Massachusetts Medical School
- * Alessandro Rigano (Program in Molecular Medicine)
- * Caterina Strambio De Castillia (Program in Molecular Medicine)
+ * Copyright (C) 2014 University of Massachusetts Medical School Alessandro
+ * Rigano (Program in Molecular Medicine) Caterina Strambio De Castillia
+ * (Program in Molecular Medicine)
  *
  * Created by the Open Microscopy Environment inteGrated Analysis (OMEGA) team:
  * Alex Rigano, Caterina Strambio De Castillia, Jasmine Clark, Vanni Galli,
  * Raffaello Giulietti, Loris Grossi, Eric Hunter, Tiziano Leidi, Jeremy Luban,
  * Ivo Sbalzarini and Mario Valle.
  *
- * Key contacts:
- * Caterina Strambio De Castillia: caterina.strambio@umassmed.edu
+ * Key contacts: Caterina Strambio De Castillia: caterina.strambio@umassmed.edu
  * Alex Rigano: alex.rigano@umassmed.edu
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
 package edu.umassmed.omega.omero.commons.gui;
 
@@ -80,13 +79,15 @@ public class OmeroBrowserPanel extends GenericPanel {
 	private OmeroBrowserList list;
 	private OmeroBrowserTable table;
 	private JScrollPane scrollPaneBrowser;
+	
+	private OmeroBrowerPanelImageLoader loader;
 
 	/**
 	 * Create a new instance of this JPanel.
 	 */
 	public OmeroBrowserPanel(final RootPaneContainer parentContainer,
-	        final OmeroAbstractBrowserInterface browserPanel,
-	        final OmeroGateway gateway, final boolean isMultiSelection) {
+			final OmeroAbstractBrowserInterface browserPanel,
+			final OmeroGateway gateway, final boolean isMultiSelection) {
 		super(parentContainer);
 
 		this.updating = false;
@@ -113,10 +114,10 @@ public class OmeroBrowserPanel extends GenericPanel {
 
 		final ButtonGroup group = new ButtonGroup();
 		this.gridView_btt = new JRadioButton(
-		        OmeroPluginGUIConstants.BROWSER_VIEW_GRID);
+				OmeroPluginGUIConstants.BROWSER_VIEW_GRID);
 		this.gridView_btt.setSelected(true);
 		this.listView_btt = new JRadioButton(
-		        OmeroPluginGUIConstants.BROWSER_LIST_GRID);
+				OmeroPluginGUIConstants.BROWSER_LIST_GRID);
 		group.add(this.gridView_btt);
 		group.add(this.listView_btt);
 
@@ -183,19 +184,19 @@ public class OmeroBrowserPanel extends GenericPanel {
 	 *            the images to display.
 	 */
 	public void setImagesAndRecreatePanels(
-	        final List<OmeroThumbnailImageInfo> imageInfo) {
+			final List<OmeroThumbnailImageInfo> imageInfo) {
 		this.imagesInfo = imageInfo;
 		// TODO refactoring?!
 		if (this.imagesInfo != null) {
 			Collections.sort(this.imagesInfo,
-			        new Comparator<OmeroThumbnailImageInfo>() {
-				        @Override
-				        public int compare(final OmeroThumbnailImageInfo o1,
-				                final OmeroThumbnailImageInfo o2) {
-					        return o1.getImageName().compareTo(
-					                o2.getImageName());
-				        }
-			        });
+					new Comparator<OmeroThumbnailImageInfo>() {
+						@Override
+						public int compare(final OmeroThumbnailImageInfo o1,
+								final OmeroThumbnailImageInfo o2) {
+							return o1.getImageName().compareTo(
+									o2.getImageName());
+						}
+					});
 		}
 		this.createAndAddSingleImagePanels();
 	}
@@ -212,12 +213,15 @@ public class OmeroBrowserPanel extends GenericPanel {
 		if (datasetWrapper == null)
 			return;
 		// this.createAndAddSingleImagePanels();
-		final OmeroBrowerPanelImageLoader loader = new OmeroBrowerPanelImageLoader(
-		        this.browserPanel, this.gateway, datasetWrapper, true);
+		if (this.loader != null) {
+			this.loader.terminate();
+		}
+		this.loader = new OmeroBrowerPanelImageLoader(this.browserPanel,
+				this.gateway, datasetWrapper, true);
 		this.browserPanel.updateMessageStatus(new OmegaMessageEvent(
-		        OmeroPluginGUIConstants.LOADING_IMAGES));
-		final Thread t = new Thread(loader);
-		t.setName(loader.getClass().getSimpleName());
+				OmeroPluginGUIConstants.LOADING_IMAGES));
+		final Thread t = new Thread(this.loader);
+		t.setName(this.loader.getClass().getSimpleName());
 		OmegaLogFileManager.registerAsExceptionHandlerOnThread(t);
 		t.start();
 	}

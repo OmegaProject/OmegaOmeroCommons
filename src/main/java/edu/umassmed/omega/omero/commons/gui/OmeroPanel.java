@@ -67,99 +67,100 @@ import edu.umassmed.omega.omero.commons.data.OmeroImageWrapper;
 import edu.umassmed.omega.omero.commons.data.OmeroThumbnailImageInfo;
 import edu.umassmed.omega.omero.commons.runnable.OmeroBrowerPanelImageLoader;
 import edu.umassmed.omega.omero.commons.runnable.OmeroDataMessageEvent;
+import edu.umassmed.omega.omero.commons.runnable.OmeroMessageEvent;
 import edu.umassmed.omega.omero.commons.runnable.OmeroThumbnailMessageEvent;
 import edu.umassmed.omega.omero.commons.runnable.OmeroWrapperMessageEvent;
 
 public abstract class OmeroPanel extends GenericPluginPanel implements
 		OmeroAbstractBrowserInterface {
-	
+
 	private static final long serialVersionUID = -5740459087763362607L;
-	
+
 	private JSplitPane mainPanel;
 	private JMenu loadableUserMenu;
 	private JMenuItem notLoggedVisualMItem;
-	
+
 	private OmeroTreeBrowserPanel projectPanel;
 	private OmeroBrowserPanel browserPanel;
 	private GenericStatusPanel statusPanel;
-	
+
 	private JButton loadImages_butt, close_butt;
-	
+
 	private OmeroGateway gateway;
-	
+
 	private final List<OmeroImageWrapper> imageWrapperToBeLoadedList;
-	
+
 	private int completedThreadsCounter, numOfThreads;
-	
+
 	private int previousLoc;
 	private Dimension oldSplitPaneDimension;
 	private double dividerLocation;
-	
+
 	private final boolean isMultiSelection;
-	
+
 	// the collection of already loaded datasets
 	// TODO implement a caching system of loaded dataset to avoid loading each
 	// time
-	
+
 	public OmeroPanel(final RootPaneContainer parent, final OmegaPlugin plugin,
 			final int index, final OmeroGateway gateway) {
 		super(parent, plugin, index);
-		
+
 		this.isMultiSelection = true;
-		
+
 		this.imageWrapperToBeLoadedList = new ArrayList<OmeroImageWrapper>();
-		
+
 		this.gateway = gateway;
-		
+
 		this.numOfThreads = 0;
 		this.completedThreadsCounter = 0;
-		
+
 		this.previousLoc = -1;
 		this.oldSplitPaneDimension = null;
 		this.dividerLocation = 0.4;
-		
+
 		this.setPreferredSize(new Dimension(750, 500));
 		this.setLayout(new BorderLayout());
 		this.createMenu();
 		this.createAndAddWidgets();
 		this.addListeners();
 	}
-	
+
 	public OmeroPanel(final RootPaneContainer parent, final OmeroGateway gateway) {
 		super(parent);
-		
+
 		this.isMultiSelection = true;
-		
+
 		this.imageWrapperToBeLoadedList = new ArrayList<OmeroImageWrapper>();
-		
+
 		this.gateway = gateway;
-		
+
 		this.numOfThreads = 0;
 		this.completedThreadsCounter = 0;
-		
+
 		this.previousLoc = -1;
 		this.oldSplitPaneDimension = null;
 		this.dividerLocation = 0.4;
-		
+
 		this.setPreferredSize(new Dimension(750, 500));
 		this.setLayout(new BorderLayout());
 		this.createMenu();
 		this.createAndAddWidgets();
 		this.addListeners();
 	}
-	
+
 	private void createMenu() {
 		final JMenuBar menu = super.getMenu();
-		
+
 		this.loadableUserMenu = new JMenu(
 				OmeroPluginGUIConstants.MENU_BROWSE_GROUPS);
 		this.notLoggedVisualMItem = new JMenuItem(
 				OmeroPluginGUIConstants.MENU_BROWSE_GROUPS_NOT_CONNECTED);
 		this.loadableUserMenu.add(this.notLoggedVisualMItem);
-		
+
 		menu.add(this.loadableUserMenu);
 	}
-	
+
 	public void updateVisualizationMenu() {
 		this.loadableUserMenu.removeAll();
 		if (!this.gateway.isConnected()) {
@@ -169,7 +170,7 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 			this.browserPanel.browseDataset(null);
 			return;
 		}
-		
+
 		final List<JMenuItem> menuItems = new ArrayList<JMenuItem>();
 		ExperimenterData loggedUser;
 		try {
@@ -185,7 +186,7 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 			OmegaLogFileManager.handleCoreException(ex, false);
 			return;
 		}
-		
+
 		for (final GroupData group : groups) {
 			// if ((group.getName().equals("user"))
 			// || (group.getName().equals("system"))) {
@@ -228,7 +229,7 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 			}
 			this.loadableUserMenu.add(menuItem);
 		}
-		
+
 		this.projectPanel.resetExperimenterData();
 		try {
 			this.projectPanel.addExperimenterData(loggedUser);
@@ -237,7 +238,7 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 		}
 		// this.projectPanel.updateTree();
 	}
-	
+
 	public void checkSameUserInOtherGroups(final List<JMenuItem> menuItems,
 			final ExperimenterData exp, final boolean selected) {
 		final String name = exp.getFirstName() + " " + exp.getLastName();
@@ -254,50 +255,50 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 			}
 		}
 	}
-	
+
 	public void createAndAddWidgets() {
 		this.projectPanel = new OmeroTreeBrowserPanel(
 				this.getParentContainer(), this, this.gateway,
 				this.isMultiSelection);
 		final JScrollPane scrollPaneList = new JScrollPane(this.projectPanel);
-		
+
 		this.browserPanel = new OmeroBrowserPanel(this.getParentContainer(),
 				this, this.gateway, this.isMultiSelection);
-		
+
 		this.mainPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		this.mainPanel.setLeftComponent(scrollPaneList);
 		this.mainPanel.setRightComponent(this.browserPanel);
 		// this.mainPanel.setDividerLocation(0.4);
 		this.add(this.mainPanel, BorderLayout.CENTER);
-		
+
 		// TODO add button to open isSelected images
 		final JPanel bottomPanel = new JPanel();
 		bottomPanel.setLayout(new BorderLayout());
-		
+
 		final JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout());
-		
+
 		this.loadImages_butt = new JButton(
 				OmeroPluginGUIConstants.CONNECTION_DIALOG_LOAD);
 		buttonPanel.add(this.loadImages_butt);
-		
+
 		// this.loadAndSelectImages_butt = new
 		// JButton("Load and select images");
 		// buttonPanel.add(this.loadAndSelectImages_butt);
-		
+
 		this.close_butt = new JButton(
 				OmeroPluginGUIConstants.CONNECTION_DIALOG_SAVE);
 		// buttonPanel.add(this.close_butt);
-		
+
 		bottomPanel.add(buttonPanel, BorderLayout.NORTH);
-		
+
 		this.statusPanel = new GenericStatusPanel(1);
-		
+
 		bottomPanel.add(this.statusPanel, BorderLayout.SOUTH);
-		
+
 		this.add(bottomPanel, BorderLayout.SOUTH);
 	}
-	
+
 	private void addListeners() {
 		this.addComponentListener(new ComponentAdapter() {
 			@Override
@@ -325,7 +326,7 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 		this.mainPanel.addPropertyChangeListener(
 				JSplitPane.DIVIDER_LOCATION_PROPERTY,
 				new PropertyChangeListener() {
-					
+
 					@Override
 					public void propertyChange(final PropertyChangeEvent evt) {
 						final JSplitPane source = (JSplitPane) evt.getSource();
@@ -334,11 +335,11 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 					}
 				});
 	}
-	
+
 	private void manageComponentResized() {
 		this.mainPanel.setDividerLocation(this.dividerLocation);
 	}
-	
+
 	private void manageDividerPositionChanged(final Dimension dimension) {
 		boolean resize = true;
 		if (this.oldSplitPaneDimension != null) {
@@ -364,14 +365,14 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 		this.browserPanel.createAndAddSingleImagePanels();
 		this.oldSplitPaneDimension = dimension;
 	}
-	
+
 	@Override
 	public void updateParentContainer(final RootPaneContainer parent) {
 		super.updateParentContainer(parent);
 		this.browserPanel.updateParentContainer(parent);
 		this.projectPanel.updateParentContainer(parent);
 	}
-	
+
 	private void loadSelectedData() throws ServerError, IOException {
 		this.numOfThreads = 0;
 		final Map<OmeroDatasetWrapper, List<OmeroImageWrapper>> imagesToBeLoaded = this.browserPanel
@@ -382,9 +383,9 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 			this.imageWrapperToBeLoadedList.addAll(imagesToBeLoaded
 					.get(datasetWrapper));
 		}
-		
+
 		this.loadImages_butt.setEnabled(false);
-		
+
 		if (imagesToBeLoaded.isEmpty()) {
 			final Map<Thread, OmeroBrowerPanelImageLoader> threads = new LinkedHashMap<Thread, OmeroBrowerPanelImageLoader>();
 			this.numOfThreads = this.projectPanel.getSelectedDatasets().size();
@@ -399,12 +400,12 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 				t.start();
 			}
 		}
-		
+
 		if (this.numOfThreads == 0) {
 			this.loadData(true);
 			this.loadImages_butt.setEnabled(true);
 		}
-		
+
 		// TODO to fix because the threads started try to update the gui and the
 		// fact we are still in progress here dont allow the correct handling of
 		// everything
@@ -415,10 +416,10 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 		// This has to be done only if threads isEmpty returns false otherwise
 		// we should invoke it directly here
 	}
-	
+
 	protected abstract void loadData(final boolean hasToSelect)
 			throws ServerError, IOException;
-	
+
 	private void addToBeLoadedImages(
 			final List<OmeroImageWrapper> imageWrapperList) {
 		this.imageWrapperToBeLoadedList.addAll(imageWrapperList);
@@ -436,17 +437,17 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 			this.loadImages_butt.setEnabled(true);
 		}
 	}
-	
+
 	@Override
 	public void browseDataset(final OmeroDatasetWrapper datasetWrap) {
 		this.browserPanel.browseDataset(datasetWrap);
 	}
-	
+
 	private void setBrowsingImages(
 			final List<OmeroThumbnailImageInfo> imageInfoList) {
 		this.browserPanel.setImagesAndRecreatePanels(imageInfoList);
 	}
-	
+
 	public void updateStatus(final String s) {
 		try {
 			this.statusPanel.updateStatus(0, s);
@@ -455,7 +456,7 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 					true);
 		}
 	}
-	
+
 	@Override
 	public void updateMessageStatus(final OmegaMessageEvent evt) {
 		try {
@@ -463,6 +464,16 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 		} catch (final OmegaPluginExceptionStatusPanel ex) {
 			OmegaLogFileManager.handlePluginException(this.getPlugin(), ex,
 					true);
+		}
+		if (evt instanceof OmeroMessageEvent) {
+			final OmeroMessageEvent omeroEvent = (OmeroMessageEvent) evt;
+			if (omeroEvent.getError() != null) {
+				if (!omeroEvent.wasTerminated()) {
+					OmegaLogFileManager.handleUncaughtException(
+							omeroEvent.getError(), false);
+				}
+				return;
+			}
 		}
 		if (evt instanceof OmeroThumbnailMessageEvent) {
 			this.setBrowsingImages(((OmeroThumbnailMessageEvent) evt)
@@ -478,48 +489,48 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 			this.projectPanel.updateTree();
 		}
 	}
-	
+
 	public void updateDialogStatus(final String s) {
-		
+
 	}
-	
+
 	@Override
 	public void updateImagesSelection() {
 		this.browserPanel.updateImagesSelection();
 	}
-	
+
 	@Override
 	public void updateDatasetSelection(final int selectedImages) {
 		// this.projectPanel.updateDatasetSelection(selectedImages);
 	}
-	
+
 	public OmeroGateway getGateway() {
 		return this.gateway;
 	}
-	
+
 	public List<OmeroImageWrapper> getImageWrapperToBeLoadedList() {
 		return this.imageWrapperToBeLoadedList;
 	}
-	
+
 	public OmeroTreeBrowserPanel getProjectPanel() {
 		return this.projectPanel;
 	}
-	
+
 	public OmeroBrowserPanel getBrowserPanel() {
 		return this.browserPanel;
 	}
-	
+
 	@Override
 	public void onCloseOperation() {
 		// TODO Auto-generated method stub
 	}
-	
+
 	public void setGateway(final OmeroGateway gateway) {
 		this.gateway = gateway;
 		this.projectPanel.setGateway(gateway);
 		this.browserPanel.setGateway(gateway);
 	}
-	
+
 	protected void setLoadingCanceled() {
 		this.loadImages_butt.setEnabled(true);
 	}

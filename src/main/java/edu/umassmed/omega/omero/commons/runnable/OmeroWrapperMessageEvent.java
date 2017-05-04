@@ -2,16 +2,15 @@ package edu.umassmed.omega.omero.commons.runnable;
 
 import java.util.List;
 
-import edu.umassmed.omega.commons.eventSystem.events.OmegaMessageEvent;
 import edu.umassmed.omega.omero.commons.data.OmeroImageWrapper;
 
-public class OmeroWrapperMessageEvent extends OmegaMessageEvent {
+public class OmeroWrapperMessageEvent extends OmeroMessageEvent {
 
 	private final List<OmeroImageWrapper> wrappers;
 
-	public OmeroWrapperMessageEvent(final String msg,
-	        final List<OmeroImageWrapper> wrappers) {
-		super(msg);
+	public OmeroWrapperMessageEvent(final String msg, final Exception error,
+			final boolean wasTerminated, final List<OmeroImageWrapper> wrappers) {
+		super(msg, error, wasTerminated);
 		this.wrappers = wrappers;
 	}
 
