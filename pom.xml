@@ -15,7 +15,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>omero.commons</name>
+	<name>omega.omero.commons</name>
 	<description>TBD</description>
 	<url>TBD</url>
 
@@ -45,14 +45,14 @@
 	</dependencies>
 
 	<build>
-		<finalName>omega.omero.commons-${version}</finalName>
+		<finalName>${project.name}-${project.version}</finalName>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.3</version>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.8</source>
+					<target>1.8</target>
 				</configuration>
 			</plugin>
 			<plugin>

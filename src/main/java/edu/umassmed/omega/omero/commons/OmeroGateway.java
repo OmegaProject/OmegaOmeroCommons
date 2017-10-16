@@ -29,8 +29,8 @@ package edu.umassmed.omega.omero.commons;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -120,6 +120,8 @@ public class OmeroGateway extends OmegaGateway {
 	private ThumbnailStorePrx thumbnailService;
 
 	private IPixelsPrx pixelsService;
+
+	private final List<RawPixelsStorePrx> rawPixelsServices;
 
 	/**
 	 * The number of thumbnails already retrieved. Resets to <code>0</code> when
@@ -281,7 +283,8 @@ public class OmeroGateway extends OmegaGateway {
 	public OmeroGateway() {
 		this.isConnected = false;
 		this.services = new ArrayList<ServiceInterfacePrx>();
-		this.reServices = new HashMap<Long, StatefulServiceInterfacePrx>();
+		this.reServices = new LinkedHashMap<Long, StatefulServiceInterfacePrx>();
+		this.rawPixelsServices = new ArrayList<RawPixelsStorePrx>();
 	}
 
 	public client getClient() {
@@ -343,9 +346,10 @@ public class OmeroGateway extends OmegaGateway {
 		this.kca = new OmeroKeepClientAlive(this);
 		this.executor = new ScheduledThreadPoolExecutor(1);
 		this.executor
-		.scheduleWithFixedDelay(this.kca, 60, 60, TimeUnit.SECONDS);
+				.scheduleWithFixedDelay(this.kca, 60, 60, TimeUnit.SECONDS);
 	}
 
+	@Override
 	public void disconnect() throws Exception {
 		if (this.executor != null) {
 			this.executor.shutdown();
@@ -353,15 +357,28 @@ public class OmeroGateway extends OmegaGateway {
 		this.kca = null;
 		this.executor = null;
 		this.setConnected(false);
+		if (this.thumbnailService != null) {
+			this.thumbnailService.close();
+		}
 		this.thumbnailService = null;
 		this.adminService = null;
 		this.containerService = null;
+		this.pixelsService = null;
+		if (!this.rawPixelsServices.isEmpty()) {
+			for (final RawPixelsStorePrx rawPixelsService : this.rawPixelsServices) {
+				rawPixelsService.close();
+			}
+		}
+		this.rawPixelsServices.clear();
+
 		this.services.clear();
 		this.reServices.clear();
 
 		this.entryEncrypted = null;
 
-		this.secureClient.closeSession();
+		if (this.secureClient != null) {
+			this.secureClient.closeSession();
+		}
 		this.secureClient = null;
 	}
 
@@ -532,24 +549,34 @@ public class OmeroGateway extends OmegaGateway {
 		
 		return images;
 	}
+	
+	public void cleanUpTemporaryData() throws Exception {
+		for (final RawPixelsStorePrx rawPixelsService : this.rawPixelsServices) {
+			rawPixelsService.close();
+		}
+		this.rawPixelsServices.clear();
+	}
 
 	@Override
 	public synchronized byte[] getImageData(final Long pixelsID, final int z,
 			final int t, final int c) throws Exception {
-		RawPixelsStorePrx service = null;
-		service = this.entryEncrypted.createRawPixelsStore();
-		service.setPixelsId(pixelsID, false);
-
-		return service.getPlane(z, c, t);
+		// RawPixelsStorePrx service = null;
+		final RawPixelsStorePrx rawPixelsService = this.entryEncrypted
+				.createRawPixelsStore();
+		rawPixelsService.setPixelsId(pixelsID, false);
+		this.rawPixelsServices.add(rawPixelsService);
+		return rawPixelsService.getPlane(z, c, t);
 	}
 
 	// TODO check if used
 	@Override
 	public int getByteWidth(final Long pixelsID) throws Exception {
-		RawPixelsStorePrx service = null;
-		service = this.entryEncrypted.createRawPixelsStore();
-		service.setPixelsId(pixelsID, false);
-		return service.getByteWidth();
+		// RawPixelsStorePrx service = null;
+		final RawPixelsStorePrx rawPixelsService = this.entryEncrypted
+				.createRawPixelsStore();
+		rawPixelsService.setPixelsId(pixelsID, false);
+		this.rawPixelsServices.add(rawPixelsService);
+		return rawPixelsService.getByteWidth();
 	}
 
 	@Override
