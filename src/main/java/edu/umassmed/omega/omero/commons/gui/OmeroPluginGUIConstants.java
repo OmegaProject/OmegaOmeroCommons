@@ -1,6 +1,6 @@
 package edu.umassmed.omega.omero.commons.gui;
 
-import edu.umassmed.omega.commons.constants.OmegaConstantsMathSymbols;
+import edu.umassmed.omega.commons.constants.OmegaMathSymbolConstants;
 
 public class OmeroPluginGUIConstants {
 	public static final String MENU_CONNECTION = "Connection";
@@ -26,6 +26,6 @@ public class OmeroPluginGUIConstants {
 	public static final String BROWSER_COLUMN_NAME_DIM_XY = "Dimensions (XY)";
 	public static final String BROWSER_COLUMN_NAME_DIM_ZTC = "Dimensions (ZTC)";
 	public static final String BROWSER_COLUMN_NAME_PIXELSIZES = "Pixel Size (XYZ) "
-			+ OmegaConstantsMathSymbols.MU + "u";
+			+ OmegaMathSymbolConstants.MU + "u";
 	public static final String BROWSER_UNKNOWN = "ND";
 }

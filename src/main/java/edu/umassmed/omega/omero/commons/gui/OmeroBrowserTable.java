@@ -28,7 +28,7 @@ import javax.swing.table.TableColumn;
 
 import ome.model.units.BigResult;
 import edu.umassmed.omega.commons.OmegaLogFileManager;
-import edu.umassmed.omega.commons.constants.OmegaConstants;
+import edu.umassmed.omega.commons.constants.OmegaGenericConstants;
 import edu.umassmed.omega.commons.data.coreElements.OmegaImage;
 import edu.umassmed.omega.omero.commons.data.OmeroThumbnailImageInfo;
 
@@ -187,7 +187,7 @@ public class OmeroBrowserTable extends JTable {
 				final List<OmeroThumbnailImageInfo> data) {
 			this.setColumnIdentifiers(identifiers);
 			this.data = data;
-			this.format = new SimpleDateFormat(OmegaConstants.OMEGA_DATE_FORMAT);
+			this.format = new SimpleDateFormat(OmegaGenericConstants.OMEGA_DATE_FORMAT);
 		}
 
 		@Override

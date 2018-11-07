@@ -1,26 +1,26 @@
 package edu.umassmed.omega.omero.commons.data;
 
-import pojos.GroupData;
+import omero.gateway.model.GroupData;
 
-public class OmeroGroupWrapper extends OmeroDataWrapper{
-	
-	private GroupData groupData;
-	
-	public OmeroGroupWrapper(GroupData data) {
+public class OmeroGroupWrapper extends OmeroDataWrapper {
+
+	private final GroupData groupData;
+
+	public OmeroGroupWrapper(final GroupData data) {
 		this.groupData = data;
 	}
-
+	
 	@Override
 	public Long getID() {
-		return groupData.getId();
+		return this.groupData.getId();
 	}
-
+	
 	@Override
 	public String getStringRepresentation() {
 		return "[" + this.getID() + "] " + this.groupData.getName();
 	}
-
+	
 	public GroupData getGroupData() {
-		return groupData;
+		return this.groupData;
 	}
 }

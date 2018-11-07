@@ -33,45 +33,45 @@ import java.util.Map;
 
 import javax.swing.SwingUtilities;
 
-import pojos.DatasetData;
-import pojos.ExperimenterData;
-import pojos.ProjectData;
+import omero.gateway.model.DatasetData;
+import omero.gateway.model.ExperimenterData;
+import omero.gateway.model.ProjectData;
 import edu.umassmed.omega.commons.OmegaLogFileManager;
 import edu.umassmed.omega.commons.eventSystem.events.OmegaMessageEvent;
 import edu.umassmed.omega.commons.gui.interfaces.OmegaMessageDisplayerPanelInterface;
 import edu.umassmed.omega.omero.commons.OmeroGateway;
 
 public class OmeroListPanelProjectAndDatasetLoader implements Runnable {
-	
+
 	private static int counter = 0;
-	
+
 	public static int getCounter() {
 		return OmeroListPanelProjectAndDatasetLoader.counter++;
 	}
-	
+
 	// private final OmeroListPanel omeroProjectsPanel;
 	private final OmegaMessageDisplayerPanelInterface displayerPanel;
 	private final OmeroGateway gateway;
 	private final ExperimenterData expData;
-	
+
 	private int projectLoaded;
 	private int projectToLoad;
-	
+
 	private final Map<ProjectData, List<DatasetData>> data;
-	
+
 	public OmeroListPanelProjectAndDatasetLoader(
 			final OmegaMessageDisplayerPanelInterface displayerPanel,
 			final OmeroGateway gateway, final ExperimenterData expData) {
 		this.displayerPanel = displayerPanel;
 		this.gateway = gateway;
 		this.expData = expData;
-		
+
 		this.data = new HashMap<ProjectData, List<DatasetData>>();
-		
+
 		this.projectToLoad = 0;
 		this.projectLoaded = 0;
 	}
-	
+
 	@Override
 	public void run() {
 		try {
@@ -89,10 +89,10 @@ public class OmeroListPanelProjectAndDatasetLoader implements Runnable {
 		} catch (final Exception ex) {
 			OmegaLogFileManager.handleCoreException(ex, true);
 		}
-		
+
 		this.updateLoadingStatus(this.projectLoaded);
 	}
-	
+
 	private void updateLoadingStatus(final int currentlyLoading) {
 		final String loadingStatus = currentlyLoading + "/"
 				+ this.projectToLoad + " project(s) displayed for "
@@ -102,7 +102,7 @@ public class OmeroListPanelProjectAndDatasetLoader implements Runnable {
 			SwingUtilities.invokeAndWait(new Runnable() {
 				@Override
 				public void run() {
-					
+
 					if (OmeroListPanelProjectAndDatasetLoader.this.projectLoaded == OmeroListPanelProjectAndDatasetLoader.this.projectToLoad) {
 						OmeroListPanelProjectAndDatasetLoader.this.displayerPanel
 								.updateMessageStatus(new OmeroDataMessageEvent(

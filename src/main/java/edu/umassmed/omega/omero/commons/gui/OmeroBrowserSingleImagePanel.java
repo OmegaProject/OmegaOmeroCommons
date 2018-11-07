@@ -36,7 +36,7 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
 
-import edu.umassmed.omega.commons.constants.OmegaConstants;
+import edu.umassmed.omega.commons.constants.OmegaGUIConstants;
 
 public class OmeroBrowserSingleImagePanel extends JPanel {
 
@@ -52,7 +52,7 @@ public class OmeroBrowserSingleImagePanel extends JPanel {
 		this.image = image;
 
 		final Dimension singleImagePanelDim = new Dimension(
-				OmegaConstants.THUMBNAIL_SIZE, OmegaConstants.THUMBNAIL_SIZE);
+				OmegaGUIConstants.THUMBNAIL_SIZE, OmegaGUIConstants.THUMBNAIL_SIZE);
 		this.setSize(singleImagePanelDim);
 		this.setPreferredSize(singleImagePanelDim);
 

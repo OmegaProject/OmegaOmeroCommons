@@ -47,9 +47,9 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
-import pojos.DatasetData;
-import pojos.ExperimenterData;
-import pojos.ProjectData;
+import omero.gateway.model.DatasetData;
+import omero.gateway.model.ExperimenterData;
+import omero.gateway.model.ProjectData;
 import edu.umassmed.omega.commons.OmegaLogFileManager;
 import edu.umassmed.omega.commons.data.coreElements.OmegaImage;
 import edu.umassmed.omega.commons.eventSystem.events.OmegaMessageEvent;
@@ -62,70 +62,70 @@ import edu.umassmed.omega.omero.commons.data.OmeroProjectWrapper;
 import edu.umassmed.omega.omero.commons.runnable.OmeroListPanelProjectAndDatasetLoader;
 
 public class OmeroTreeBrowserPanel extends GenericPanel {
-	
+
 	private static final long serialVersionUID = -5868897435063007049L;
-	
+
 	private final List<OmeroDatasetWrapper> selectedDatasetList;
 	private final List<OmeroExperimenterWrapper> expList;
-	
+
 	private final List<OmegaImage> loadedImages;
-	
+
 	private OmeroGateway gateway;
 	private final OmeroAbstractBrowserInterface browserPanel;
-	
+
 	private final Map<String, OmeroDataWrapper> nodeMap;
 	private final DefaultMutableTreeNode root;
-	
+
 	private JTree dataTree;
-	
+
 	private final boolean isMultiSelection;
 	private boolean isAdjusting;
-	
+
 	private OmeroDatasetWrapper currentSelection;
-	
+
 	public OmeroTreeBrowserPanel(final RootPaneContainer parentContainer,
 			final OmeroAbstractBrowserInterface browserPanel,
 			final OmeroGateway gateway, final boolean isMultiSelection) {
 		super(parentContainer);
 		this.isMultiSelection = isMultiSelection;
 		this.isAdjusting = false;
-		
+
 		this.currentSelection = null;
 		this.selectedDatasetList = new ArrayList<OmeroDatasetWrapper>();
-		
+
 		this.expList = new ArrayList<OmeroExperimenterWrapper>();
-		
+
 		this.loadedImages = new ArrayList<OmegaImage>();
-		
+
 		this.root = new DefaultMutableTreeNode();
 		this.root.setUserObject(OmeroPluginGUIConstants.TREE_TITLE);
 		this.nodeMap = new LinkedHashMap<String, OmeroDataWrapper>();
-		
+
 		this.setLayout(new BorderLayout());
-		
+
 		this.createAndAddWidgets();
 		this.addListeners();
-		
+
 		// this.updateTree();
-		
+
 		this.gateway = gateway;
 		this.browserPanel = browserPanel;
 	}
-	
+
 	public void createAndAddWidgets() {
 		this.dataTree = new JTree(this.root);
-		
+
 		this.dataTree.expandRow(0);
 		this.dataTree.setRootVisible(false);
 		this.dataTree.setEditable(false);
-		
+
 		final JScrollPane scrollPane = new JScrollPane(this.dataTree);
 		scrollPane.setBorder(new TitledBorder(
 				OmeroPluginGUIConstants.TREE_TITLE));
-		
+
 		this.add(scrollPane, BorderLayout.CENTER);
 	}
-	
+
 	private void addListeners() {
 		this.dataTree.addMouseListener(new MouseAdapter() {
 			@Override
@@ -141,7 +141,7 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 			}
 		});
 	}
-	
+
 	private void handleSelection() {
 		this.selectedDatasetList.clear();
 		if (this.isAdjusting)
@@ -165,7 +165,7 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 			}
 		}
 	}
-	
+
 	private void handleMouseClick(final int x, final int y) {
 		final TreePath path = this.dataTree.getPathForLocation(x, y);
 		if (path == null)
@@ -183,11 +183,11 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 			this.browserPanel.updateImagesSelection();
 		}
 	}
-	
+
 	public void resetExperimenterData() {
 		this.expList.clear();
 	}
-	
+
 	public void addExperimenterData(final ExperimenterData experimenterData)
 			throws ServerError {
 		this.browserPanel.updateMessageStatus(new OmegaMessageEvent(
@@ -200,13 +200,13 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 		OmegaLogFileManager.registerAsExceptionHandlerOnThread(t);
 		t.start();
 	}
-	
+
 	public void updateOmeData(final ExperimenterData expData,
 			final Map<ProjectData, List<DatasetData>> datas) {
-		
+
 		final OmeroExperimenterWrapper expWrapper = new OmeroExperimenterWrapper(
 				expData);
-		
+
 		final List<ProjectData> projects = new ArrayList<>(datas.keySet());
 		Collections.sort(projects, new Comparator<ProjectData>() {
 			@Override
@@ -215,7 +215,7 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 			}
 		});
 		expWrapper.setProjects(projects);
-		
+
 		for (final ProjectData proj : projects) {
 			final List<DatasetData> dataset = new ArrayList<>(datas.get(proj));
 			Collections.sort(dataset, new Comparator<DatasetData>() {
@@ -226,10 +226,10 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 			});
 			expWrapper.setDatasets(proj, dataset);
 		}
-		
+
 		this.expList.add(expWrapper);
 	}
-	
+
 	public void removeExperimenterData(final ExperimenterData experimenterData) {
 		// TODO remove projects / dataset from list
 		OmeroExperimenterWrapper omeExpToRemove = null;
@@ -242,7 +242,7 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 		this.expList.remove(omeExpToRemove);
 		this.updateTree();
 	}
-	
+
 	public void updateTree() {
 		this.isAdjusting = true;
 		this.selectedDatasetList.clear();
@@ -260,10 +260,10 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 			}
 		}
 		this.dataTree.setRootVisible(true);
-		
+
 		String s = null;
 		this.root.removeAllChildren();
-		
+
 		((DefaultTreeModel) this.dataTree.getModel()).reload();
 		this.nodeMap.clear();
 		// TODO mark in gray if all images are loaded / all dataset if project
@@ -277,7 +277,7 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 				for (final OmeroDatasetWrapper datasetWrapper : datasets) {
 					final DefaultMutableTreeNode datasetNode = new DefaultMutableTreeNode();
 					s = datasetWrapper.getStringRepresentation();
-					
+
 					this.nodeMap.put(s, datasetWrapper);
 					datasetNode.setUserObject(s);
 					projectNode.add(datasetNode);
@@ -292,14 +292,14 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 			expNode.setUserObject(s);
 			this.root.add(expNode);
 		}
-		
+
 		this.dataTree.expandRow(0);
 		this.dataTree.setRootVisible(false);
 		this.dataTree.repaint();
 		this.isAdjusting = false;
 		this.expandChildrenIfNeeded(this.root, expandedPaths, selectedPaths);
 	}
-	
+
 	private void expandChildrenIfNeeded(final DefaultMutableTreeNode node,
 			final List<TreePath> expandedPaths,
 			final List<TreePath> selectedPaths) {
@@ -320,11 +320,11 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 			this.expandChildrenIfNeeded(child, expandedPaths, selectedPaths);
 		}
 	}
-	
+
 	public List<OmeroDatasetWrapper> getSelectedDatasets() {
 		return this.selectedDatasetList;
 	}
-	
+
 	public void updateLoadedElements(final List<OmegaImage> loadedImages) {
 		this.loadedImages.clear();
 		if (loadedImages != null) {
@@ -332,7 +332,7 @@ public class OmeroTreeBrowserPanel extends GenericPanel {
 		}
 		this.updateTree();
 	}
-	
+
 	public void setGateway(final OmeroGateway gateway) {
 		this.gateway = gateway;
 	}

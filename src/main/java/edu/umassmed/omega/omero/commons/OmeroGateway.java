@@ -52,6 +52,15 @@ import omero.api.ServiceFactoryPrx;
 import omero.api.ServiceInterfacePrx;
 import omero.api.StatefulServiceInterfacePrx;
 import omero.api.ThumbnailStorePrx;
+import omero.gateway.exception.DSAccessException;
+import omero.gateway.exception.DSOutOfServiceException;
+import omero.gateway.exception.RenderingServiceException;
+import omero.gateway.model.ChannelData;
+import omero.gateway.model.DatasetData;
+import omero.gateway.model.ExperimenterData;
+import omero.gateway.model.GroupData;
+import omero.gateway.model.PixelsData;
+import omero.gateway.model.ProjectData;
 import omero.model.Channel;
 import omero.model.Dataset;
 import omero.model.Experimenter;
@@ -63,12 +72,6 @@ import omero.model.Project;
 import omero.model.Time;
 import omero.romio.PlaneDef;
 import omero.sys.ParametersI;
-import pojos.ChannelData;
-import pojos.DatasetData;
-import pojos.ExperimenterData;
-import pojos.GroupData;
-import pojos.PixelsData;
-import pojos.ProjectData;
 import Glacier2.CannotCreateSessionException;
 import Glacier2.PermissionDeniedException;
 import edu.umassmed.omega.commons.OmegaLogFileManager;
@@ -409,6 +412,34 @@ public class OmeroGateway extends OmegaGateway {
 
 		return datasets;
 	}
+	
+	// public List<ImageData> getImages(final DatasetData dataset)
+	// throws Exception {
+	// final List<ImageData> images = new ArrayList<ImageData>();
+	// final ParametersI po = new ParametersI();
+	// // po.add(Project.class.getName(), omero.rtypes.rlong(project.getId()));
+	// po.exp(omero.rtypes.rlong(dataset.getOwner().getId()));
+	// po.leaves();
+	//
+	// final List<Long> ids = new ArrayList<Long>();
+	// final Set<ImageData> set = dataset.getImages();
+	// for (final ImageData obj : set) {
+	// ids.add(obj.getId());
+	// }
+	//
+	// final IContainerPrx service = this.getContainerService();
+	// final List<IObject> objects = service.loadContainerHierarchy(
+	// Image.class.getName(), ids, po);
+	// if (objects == null)
+	// return images;
+	//
+	// final Iterator<IObject> i = objects.iterator();
+	// while (i.hasNext()) {
+	// images.add(new ImageData((Image) i.next()));
+	// }
+	//
+	// return images;
+	// }
 
 	public List<ChannelData> getChannels(final PixelsData pixels)
 			throws Exception {
@@ -550,6 +581,7 @@ public class OmeroGateway extends OmegaGateway {
 		return images;
 	}
 	
+	@Override
 	public void cleanUpTemporaryData() throws Exception {
 		for (final RawPixelsStorePrx rawPixelsService : this.rawPixelsServices) {
 			rawPixelsService.close();

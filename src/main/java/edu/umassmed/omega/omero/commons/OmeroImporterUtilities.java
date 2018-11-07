@@ -10,14 +10,17 @@ import java.util.Set;
 
 import javax.swing.RootPaneContainer;
 
+import ome.model.units.BigResult;
 import omero.ServerError;
-import pojos.ChannelData;
-import pojos.DatasetData;
-import pojos.ExperimenterData;
-import pojos.GroupData;
-import pojos.ImageData;
-import pojos.PixelsData;
-import pojos.ProjectData;
+import omero.gateway.model.ChannelData;
+import omero.gateway.model.DatasetData;
+import omero.gateway.model.ExperimenterData;
+import omero.gateway.model.GroupData;
+import omero.gateway.model.ImageData;
+import omero.gateway.model.PixelsData;
+import omero.gateway.model.ProjectData;
+import omero.model.Length;
+import omero.model.enums.UnitsLength;
 import Glacier2.CannotCreateSessionException;
 import Glacier2.PermissionDeniedException;
 import Ice.ConnectionRefusedException;
@@ -256,7 +259,7 @@ public class OmeroImporterUtilities {
 	public static boolean loadAndAddData(final OmeroImageWrapper imageWrapper,
 			final OmeroGateway gateway, final OmegaData omegaData,
 			final boolean hasToSelect, final List<OmegaElement> loadedElements,
-			final boolean dataChanged) {
+			final boolean dataChanged) throws BigResult {
 		boolean loadDataChanged = dataChanged;
 		final ProjectData projectData = imageWrapper.getProjectData();
 		final DatasetData datasetData = imageWrapper.getDatasetData();
@@ -302,12 +305,28 @@ public class OmeroImporterUtilities {
 				}
 			}
 			
+			final Length pixelsSizeX = pixelsData
+					.getPixelSizeX(UnitsLength.MICROMETER);
+			final Length pixelsSizeY = pixelsData
+					.getPixelSizeY(UnitsLength.MICROMETER);
+			final Length pixelsSizeZ = pixelsData
+					.getPixelSizeZ(UnitsLength.MICROMETER);
+			Double pixelsSizeX_d = 0.0, pixelsSizeY_d = 0.0, pixelsSizeZ_d = 0.0;
+			if (pixelsSizeX != null) {
+				pixelsSizeX_d = pixelsSizeX.getValue();
+			}
+			if (pixelsSizeY != null) {
+				pixelsSizeY_d = pixelsSizeY.getValue();
+			}
+			if (pixelsSizeZ != null) {
+				pixelsSizeZ_d = pixelsSizeZ.getValue();
+			}
+			
 			final OmegaImagePixels pixels = new OmegaImagePixels(
 					pixelsData.getPixelType(), pixelsData.getSizeX(),
 					pixelsData.getSizeY(), pixelsData.getSizeZ(),
 					pixelsData.getSizeC(), pixelsData.getSizeT(),
-					pixelsData.getPixelSizeX(), pixelsData.getPixelSizeY(),
-					pixelsData.getPixelSizeZ(), channelNames);
+					pixelsSizeX_d, pixelsSizeY_d, pixelsSizeZ_d, channelNames);
 			final long id = pixelsData.getId();
 			pixels.setOmeroId(id);
 			double physicalT = -1;
