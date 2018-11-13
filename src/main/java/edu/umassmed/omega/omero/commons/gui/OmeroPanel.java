@@ -60,7 +60,7 @@ import edu.umassmed.omega.commons.eventSystem.events.OmegaMessageEvent;
 import edu.umassmed.omega.commons.exceptions.OmegaPluginExceptionStatusPanel;
 import edu.umassmed.omega.commons.gui.GenericPluginPanel;
 import edu.umassmed.omega.commons.gui.GenericStatusPanel;
-import edu.umassmed.omega.commons.plugins.OmegaPlugin;
+import edu.umassmed.omega.commons.pluginArchetypes.OmegaPluginArchetype;
 import edu.umassmed.omega.omero.commons.OmeroGateway;
 import edu.umassmed.omega.omero.commons.data.OmeroDataWrapper;
 import edu.umassmed.omega.omero.commons.data.OmeroDatasetWrapper;
@@ -103,7 +103,7 @@ public abstract class OmeroPanel extends GenericPluginPanel implements
 	// TODO implement a caching system of loaded dataset to avoid loading each
 	// time
 
-	public OmeroPanel(final RootPaneContainer parent, final OmegaPlugin plugin,
+	public OmeroPanel(final RootPaneContainer parent, final OmegaPluginArchetype plugin,
 			final int index, final OmeroGateway gateway) {
 		super(parent, plugin, index);
 
