@@ -1,0 +1,79 @@
+cff-version: 1.0.3
+message: If you use OmegaOeroCommons, please cite both the software and the papers as indicated in the scope of each reference.
+authors:
+  - family-names: Rigano
+    given-names: Alessandro
+    affiliation: University of Massachusetts Medical School
+    email: alessandro.rigano@umassmed.edu
+  - family-names: Strambio-De-Castillia
+    given-names: Caterina
+    affiliation: University of Massachusetts Medical School
+    email: caterina.strambio@umassmed.edu
+    orcid: https://orcid.org/0000-0002-1069-1816
+title: OmegaCommons
+version: v0.01.0-beta
+doi: 10.5281/zenodo.2548938
+date-released: 2019-01-24
+repository: https://github.com/OmegaProject/OmegaOmeroCommons
+description: The main component of OmegaOmeroCommons is Image Gateway, which implements and extends the OMERO.blitz library and other components of the OMERO API to communicate with OMERO as the main source of images. 
+keywords:
+  - java
+  - particle-tracking
+  - particle-localization
+  - particle-detection
+  - motion-analysis
+  - error-propagation
+  - data-provenance
+  - data-management
+  - classification
+  - trajectory-segmentation
+license: GNU General Public License v.3
+references:
+  - type: article
+    scope: Cite this paper every time you use the software
+    authors:
+      - family-names: Rigano
+        given-names: Alessandro
+        affiliation: University of Massachusetts Medical School
+        email: alessandro.rigano@umassmed.edu
+      - family-names: Galli
+        given-names: Vanni
+        affiliation: Scuola Universitaria Superiore della Svizzera Italiana (SUPSI)
+      - family-names: Clark
+        given-names: Jasmine M
+        affiliation: Nell Hodgson Woodruff School of Nursing, Emory University
+      - family-names: Pereira
+        given-names: Lara E
+        affiliation: Division of Sexual Transmitted Diseases Prevention, Centers for Disease Control and Prevention
+      - family-names: Grossi
+        given-names: Loris
+        affiliation:  Scuola Universitaria Superiore della Svizzera Italiana (SUPSI)
+      - family-names: Luban
+        given-names: Jeremy
+        affiliation: University of Massachusetts Medical School
+        orcid: https://orcid.org/0000-0001-5650-4054
+      - family-names: Giulietti
+        given-names: Raffaello
+        affiliation: Scuola Universitaria Superiore della Svizzera Italiana (SUPSI)
+      - family-names: Leidi
+        given-names: Tiziano
+        affiliation: Scuola Universitaria Superiore della Svizzera Italiana (SUPSI)
+      - family-names: Hunter
+        given-names: Eric
+        affiliation: Emory Vaccine Center at Yerkes National Primate Research Center
+      - family-names: Valle
+        given-names: Mario
+        affiliation: Swiss National Supercomputing Centre
+      - family-names: Sbalzarini
+        given-names: Ivo F.
+        affiliation: Max Planck Institute of Molecular Cell Biology and Genetics in Dresden
+      - family-names: Strambio-De-Castillia
+        given-names: Caterina
+        affiliation: University of Massachusetts Medical School
+        email: caterina.strambio@umassmed.edu
+        orcid: https://orcid.org/0000-0002-1069-1816
+    title: "OMEGA: a software tool for the management, analysis, and dissemination of 	intracellular trafficking data that incorporates motion type classification and quality control"
+    year: 2018
+    journal: bioRxiv.org
+    doi: 10.1101/251850
+url: https://doi.org/10.1101/251850
