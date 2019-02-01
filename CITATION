@@ -10,9 +10,9 @@ authors:
     affiliation: University of Massachusetts Medical School
     email: caterina.strambio@umassmed.edu
     orcid: https://orcid.org/0000-0002-1069-1816
-title: OmegaCommons
+title: OmegaOmeroCommons
 version: v0.01.0-beta
-doi: 10.5281/zenodo.2548938
+doi: https://doi.org/10.5281/zenodo.2548938
 date-released: 2019-01-24
 repository: https://github.com/OmegaProject/OmegaOmeroCommons
 description: The main component of OmegaOmeroCommons is Image Gateway, which implements and extends the OMERO.blitz library and other components of the OMERO API to communicate with OMERO as the main source of images. 
@@ -76,4 +76,4 @@ references:
     year: 2018
     journal: bioRxiv.org
     doi: 10.1101/251850
-url: https://doi.org/10.1101/251850
+    url: https://doi.org/10.1101/251850
