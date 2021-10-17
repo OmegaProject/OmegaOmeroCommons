@@ -36,22 +36,22 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
 import omero.ServerError;
-import omero.client;
 import omero.api.IAdminPrx;
 import omero.api.IContainerPrx;
 import omero.api.IPixelsPrx;
 import omero.api.IQueryPrx;
 import omero.api.RawPixelsStorePrx;
 import omero.api.RenderingEnginePrx;
-import omero.api.ServiceFactoryPrx;
 import omero.api.ServiceInterfacePrx;
 import omero.api.StatefulServiceInterfacePrx;
 import omero.api.ThumbnailStorePrx;
+import omero.gateway.Gateway;
+import omero.gateway.LoginCredentials;
+import omero.gateway.SecurityContext;
 import omero.gateway.exception.DSAccessException;
 import omero.gateway.exception.DSOutOfServiceException;
 import omero.gateway.exception.RenderingServiceException;
@@ -61,6 +61,7 @@ import omero.gateway.model.ExperimenterData;
 import omero.gateway.model.GroupData;
 import omero.gateway.model.PixelsData;
 import omero.gateway.model.ProjectData;
+import omero.log.SimpleLogger;
 import omero.model.Channel;
 import omero.model.Dataset;
 import omero.model.Experimenter;
@@ -72,8 +73,6 @@ import omero.model.Project;
 import omero.model.Time;
 import omero.romio.PlaneDef;
 import omero.sys.ParametersI;
-import Glacier2.CannotCreateSessionException;
-import Glacier2.PermissionDeniedException;
 import edu.umassmed.omega.commons.OmegaLogFileManager;
 import edu.umassmed.omega.commons.data.imageDBConnectionElements.OmegaGateway;
 import edu.umassmed.omega.commons.data.imageDBConnectionElements.OmegaLoginCredentials;
@@ -98,14 +97,20 @@ public class OmeroGateway extends OmegaGateway {
 	 * The Blitz client object, this is the entry point to the OMERO Server
 	 * using a secure connection.
 	 */
-	private client secureClient;
-	private OmeroKeepClientAlive kca;
+	// private client secureClient;
+	// private OmeroKeepClientAlive kca;
+
+	private OmegaLoginCredentials userInfo;
+	private OmegaServerInformation serverInfo;
+	private Gateway gateway;
+	
+	private SecurityContext ctx;
 
 	/**
 	 * The entry point provided by the connection library to access the various
 	 * <i>OMERO</i> services.
 	 */
-	private ServiceFactoryPrx entryEncrypted;
+	// private ServiceFactoryPrx entryEncrypted;
 
 	/** Collection of services to keep alive. */
 	private final List<ServiceInterfacePrx> services;
@@ -179,8 +184,10 @@ public class OmeroGateway extends OmegaGateway {
 				this.thumbnailService = null;
 			}
 			if (this.thumbnailService == null) {
-				this.thumbnailService = this.entryEncrypted
-						.createThumbnailStore();
+				// this.thumbnailService = this.entryEncrypted
+				// .createThumbnailStore();
+				this.thumbnailService = this.gateway
+						.getThumbnailService(this.ctx);
 				this.services.add(this.thumbnailService);
 			}
 			this.thumbnailRetrieval++;
@@ -207,8 +214,9 @@ public class OmeroGateway extends OmegaGateway {
 	private IContainerPrx getContainerService() {
 		try {
 			if (this.containerService == null) {
-				this.containerService = this.entryEncrypted
-						.getContainerService();
+				// this.containerService = this.entryEncrypted
+				// .getContainerService();
+				this.containerService = this.gateway.getPojosService(this.ctx);
 				this.services.add(this.containerService);
 			}
 			return this.containerService;
@@ -224,7 +232,8 @@ public class OmeroGateway extends OmegaGateway {
 	private IPixelsPrx getPixelsService() {
 		try {
 			if (this.pixelsService == null) {
-				this.pixelsService = this.entryEncrypted.getPixelsService();
+				// this.pixelsService = this.entryEncrypted.getPixelsService();
+				this.pixelsService = this.gateway.getPixelsService(this.ctx);
 				this.services.add(this.pixelsService);
 			}
 			return this.pixelsService;
@@ -245,7 +254,8 @@ public class OmeroGateway extends OmegaGateway {
 	private IAdminPrx getAdminService() {
 		try {
 			if (this.adminService == null) {
-				this.adminService = this.entryEncrypted.getAdminService();
+				// this.adminService = this.entryEncrypted.getAdminService();
+				this.adminService = this.gateway.getAdminService(this.ctx);
 				this.services.add(this.adminService);
 			}
 			return this.adminService;
@@ -268,19 +278,19 @@ public class OmeroGateway extends OmegaGateway {
 	 *             If an error occurred while trying to retrieve data from OMERO
 	 *             service.
 	 */
-	private RenderingEnginePrx createRenderingService() {
-		try {
-			final RenderingEnginePrx engine = this.entryEncrypted
-					.createRenderingEngine();
-			return engine;
-		} catch (final Exception ex) {
-			// TODO handle differently
-			OmegaLogFileManager.handleUncaughtException(ex, true);
-		}
-
-		// TODO Manage Null Case
-		return null;
-	}
+	// private RenderingEnginePrx createRenderingService() {
+	// try {
+	// final RenderingEnginePrx engine = this.entryEncrypted
+	// .createRenderingEngine();
+	// return engine;
+	// } catch (final Exception ex) {
+	// // TODO handle differently
+	// OmegaLogFileManager.handleUncaughtException(ex, true);
+	// }
+	//
+	// // TODO Manage Null Case
+	// return null;
+	// }
 
 	/** Creates a new instance. */
 	public OmeroGateway() {
@@ -288,34 +298,45 @@ public class OmeroGateway extends OmegaGateway {
 		this.services = new ArrayList<ServiceInterfacePrx>();
 		this.reServices = new LinkedHashMap<Long, StatefulServiceInterfacePrx>();
 		this.rawPixelsServices = new ArrayList<RawPixelsStorePrx>();
+
+		this.gateway = new Gateway(new SimpleLogger());
 	}
 
-	public client getClient() {
-		return this.secureClient;
+	@Override
+	public OmegaLoginCredentials getGatewayUserInfo() {
+		return this.userInfo;
 	}
-
-	/** Keeps the services alive. */
-	protected void keepSessionAlive() {
-		final int n = this.services.size() + this.reServices.size();
-		final ServiceInterfacePrx[] entries = new ServiceInterfacePrx[n];
-		final Iterator<ServiceInterfacePrx> i = this.services.iterator();
-		int index = 0;
-		while (i.hasNext()) {
-			entries[index] = i.next();
-			index++;
-		}
-		final Iterator<Long> j = this.reServices.keySet().iterator();
-		while (j.hasNext()) {
-			entries[index] = this.reServices.get(j.next());
-			index++;
-		}
-		try {
-			this.entryEncrypted.keepAllAlive(entries);
-		} catch (final Exception e) {
-			// Handle exception. Here
-		}
+	
+	@Override
+	public OmegaServerInformation getGatewayServerInfo() {
+		return this.serverInfo;
 	}
-
+	
+	// public client getClient() {
+	// this.gateway.get
+	// return this.secureClient;
+	// }
+	// /** Keeps the services alive. */
+	// protected void keepSessionAlive() {
+	// final int n = this.services.size() + this.reServices.size();
+	// final ServiceInterfacePrx[] entries = new ServiceInterfacePrx[n];
+	// final Iterator<ServiceInterfacePrx> i = this.services.iterator();
+	// int index = 0;
+	// while (i.hasNext()) {
+	// entries[index] = i.next();
+	// index++;
+	// }
+	// final Iterator<Long> j = this.reServices.keySet().iterator();
+	// while (j.hasNext()) {
+	// entries[index] = this.reServices.get(j.next());
+	// index++;
+	// }
+	// try {
+	// this.entryEncrypted.keepAllAlive(entries);
+	// } catch (final Exception e) {
+	// // Handle exception. Here
+	// }
+	// }
 	/**
 	 * Logs in. otherwise.
 	 *
@@ -323,33 +344,44 @@ public class OmeroGateway extends OmegaGateway {
 	 *            Host the information to connect.
 	 * @return <code>true</code> if connected, <code>false</code>
 	 * @throws Exception
-	 * @throws ServerError
-	 * @throws PermissionDeniedException
-	 * @throws CannotCreateSessionException
 	 */
 	@Override
 	public void connect(final OmegaLoginCredentials loginCred,
 			final OmegaServerInformation serverInfo) throws Exception {
 		// TODO check with cases should throw exception and what shouldn't
 		this.setConnected(false);
-		if (this.secureClient == null) {
-			this.secureClient = new client(serverInfo.getHostName(),
-					serverInfo.getPort());
+		if (this.gateway == null) {
+			this.gateway = new Gateway(new SimpleLogger());
 		}
+		// if (this.secureClient == null) {
+		// this.secureClient = new client(serverInfo.getHostName(),
+		// serverInfo.getPort());
+		// }
+		final LoginCredentials cred = new LoginCredentials();
+		cred.getServer().setHost(serverInfo.getHostName());
+		cred.getServer().setPort(serverInfo.getPort());
+		cred.getUser().setUsername(loginCred.getUserName());
+		cred.getUser().setPassword(loginCred.getPassword());
 
+		ExperimenterData user = null;
 		try {
-			this.entryEncrypted = this.secureClient.createSession(
-					loginCred.getUserName(), loginCred.getPassword());
+			// this.entryEncrypted = this.secureClient.createSession(
+			// loginCred.getUserName(), loginCred.getPassword());
+			user = this.gateway.connect(cred);
+			this.userInfo = loginCred;
+			this.serverInfo = serverInfo;
+			this.ctx = new SecurityContext(user.getGroupId());
 		} catch (final Exception ex) {
 			this.disconnect();
 			throw ex;
 		}
 
 		this.setConnected(true);
-		this.kca = new OmeroKeepClientAlive(this);
-		this.executor = new ScheduledThreadPoolExecutor(1);
-		this.executor
-				.scheduleWithFixedDelay(this.kca, 60, 60, TimeUnit.SECONDS);
+
+		// this.kca = new OmeroKeepClientAlive(this);
+		// this.executor = new ScheduledThreadPoolExecutor(1);
+		// this.executor
+		// .scheduleWithFixedDelay(this.kca, 60, 60, TimeUnit.SECONDS);
 	}
 
 	@Override
@@ -357,8 +389,8 @@ public class OmeroGateway extends OmegaGateway {
 		if (this.executor != null) {
 			this.executor.shutdown();
 		}
-		this.kca = null;
-		this.executor = null;
+		// this.kca = null;
+		// this.executor = null;
 		this.setConnected(false);
 		if (this.thumbnailService != null) {
 			this.thumbnailService.close();
@@ -377,12 +409,20 @@ public class OmeroGateway extends OmegaGateway {
 		this.services.clear();
 		this.reServices.clear();
 
-		this.entryEncrypted = null;
+		// this.entryEncrypted = null;
+		
+		// if (this.secureClient != null) {
+		// this.secureClient.closeSession();
+		// }
+		// this.secureClient = null;
 
-		if (this.secureClient != null) {
-			this.secureClient.closeSession();
+		if (this.gateway != null) {
+			this.gateway.closeConnector(this.ctx);
+			this.gateway.disconnect();
 		}
-		this.secureClient = null;
+		this.serverInfo = null;
+		this.userInfo = null;
+		this.gateway = null;
 	}
 
 	public List<DatasetData> getDatasets(final ProjectData project)
@@ -533,7 +573,9 @@ public class OmeroGateway extends OmegaGateway {
 	 */
 	public RenderingEnginePrx createRenderingService(final long pixelsID)
 			throws Exception {
-		final RenderingEnginePrx service = this.createRenderingService();
+		final RenderingEnginePrx service = this.gateway.getRenderingService(
+				this.ctx, pixelsID);
+		// final RenderingEnginePrx service = this.createRenderingService();
 		this.reServices.put(pixelsID, service);
 		service.lookupPixels(pixelsID);
 		if (!(service.lookupRenderingDef(pixelsID))) {
@@ -593,8 +635,10 @@ public class OmeroGateway extends OmegaGateway {
 	public synchronized byte[] getImageData(final Long pixelsID, final int z,
 			final int t, final int c) throws Exception {
 		// RawPixelsStorePrx service = null;
-		final RawPixelsStorePrx rawPixelsService = this.entryEncrypted
-				.createRawPixelsStore();
+		final RawPixelsStorePrx rawPixelsService = this.gateway
+				.getPixelsStore(this.ctx);
+		// final RawPixelsStorePrx rawPixelsService = this.entryEncrypted
+		// .createRawPixelsStore();
 		rawPixelsService.setPixelsId(pixelsID, false);
 		this.rawPixelsServices.add(rawPixelsService);
 		return rawPixelsService.getPlane(z, c, t);
@@ -604,8 +648,10 @@ public class OmeroGateway extends OmegaGateway {
 	@Override
 	public int getByteWidth(final Long pixelsID) throws Exception {
 		// RawPixelsStorePrx service = null;
-		final RawPixelsStorePrx rawPixelsService = this.entryEncrypted
-				.createRawPixelsStore();
+		final RawPixelsStorePrx rawPixelsService = this.gateway
+				.getPixelsStore(this.ctx);
+		// final RawPixelsStorePrx rawPixelsService = this.entryEncrypted
+		// .createRawPixelsStore();
 		rawPixelsService.setPixelsId(pixelsID, false);
 		this.rawPixelsServices.add(rawPixelsService);
 		return rawPixelsService.getByteWidth();
@@ -664,7 +710,8 @@ public class OmeroGateway extends OmegaGateway {
 	public List<IObject> loadPlaneInfo(final long pixelsID, final int z,
 			final int t, final int channel) throws Exception {
 		// isSessionAlive();
-		final IQueryPrx service = this.entryEncrypted.getQueryService();
+		final IQueryPrx service = this.gateway.getQueryService(this.ctx);
+		// final IQueryPrx service = this.entryEncrypted.getQueryService();
 		final StringBuilder sb = new StringBuilder();
 		final ParametersI param = new ParametersI();
 		sb.append("select info from PlaneInfo as info ");

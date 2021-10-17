@@ -11,7 +11,6 @@ import java.util.Set;
 import javax.swing.RootPaneContainer;
 
 import ome.model.units.BigResult;
-import omero.ServerError;
 import omero.gateway.model.ChannelData;
 import omero.gateway.model.DatasetData;
 import omero.gateway.model.ExperimenterData;
@@ -21,10 +20,6 @@ import omero.gateway.model.PixelsData;
 import omero.gateway.model.ProjectData;
 import omero.model.Length;
 import omero.model.enums.UnitsLength;
-import Glacier2.CannotCreateSessionException;
-import Glacier2.PermissionDeniedException;
-import Ice.ConnectionRefusedException;
-import Ice.DNSException;
 import edu.umassmed.omega.commons.OmegaLogFileManager;
 import edu.umassmed.omega.commons.data.OmegaData;
 import edu.umassmed.omega.commons.data.coreElements.OmegaDataset;
@@ -40,6 +35,8 @@ import edu.umassmed.omega.omero.commons.data.OmeroExperimenterWrapper;
 import edu.umassmed.omega.omero.commons.data.OmeroGroupWrapper;
 import edu.umassmed.omega.omero.commons.data.OmeroImageWrapper;
 import edu.umassmed.omega.omero.commons.data.OmeroServerInformation;
+// import Glacier2.CannotCreateSessionException;
+// import Glacier2.PermissionDeniedException;
 
 public class OmeroImporterUtilities {
 	
@@ -473,18 +470,23 @@ public class OmeroImporterUtilities {
 		try {
 			gateway.connect(new OmegaLoginCredentials(username, psw),
 					new OmeroServerInformation(host, port));
-		} catch (final CannotCreateSessionException ex) {
-			errorMsg = "Unable to create a session.";
-		} catch (final PermissionDeniedException ex) {
-			errorMsg = "<html>Access denied.<br>Verify username and/or password.</html>";
-		} catch (final ServerError ex) {
-			errorMsg = "Server error.";
-		} catch (final DNSException ex) {
-			errorMsg = "<html>Unable to find the server<br>Verify server address.</html>";
-		} catch (final ConnectionRefusedException ex) {
-			errorMsg = "<html>Server refused the connection.<br>Verify port.</html>";
+			
+			// } catch (final CannotCreateSessionException ex) {
+			// errorMsg = "Unable to create a session.";
+			// } catch (final PermissionDeniedException ex) {
+			// errorMsg =
+			// "<html>Access denied.<br>Verify username and/or password.</html>";
+			// } catch (final ServerError ex) {
+			// errorMsg = "Server error.";
+			// } catch (final DNSException ex) {
+			// errorMsg =
+			// "<html>Unable to find the server<br>Verify server address.</html>";
+			// } catch (final ConnectionRefusedException ex) {
+			// errorMsg =
+			// "<html>Server refused the connection.<br>Verify port.</html>";
+
 		} catch (final Exception ex) {
-			errorMsg = "Unknown error.";
+			errorMsg = ex.getMessage();
 			// OmegaLogFileManager.handleUncaughtException(ex, true);
 		}
 		if (errorMsg != null) {
@@ -495,7 +497,7 @@ public class OmeroImporterUtilities {
 		}
 		// OmeroImporterUtilities.handleConnectionError(container, error);
 	}
-
+	
 	// public static void handleConnectionError(final RootPaneContainer
 	// container,
 	// final int error) {
