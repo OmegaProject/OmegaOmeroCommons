@@ -33,20 +33,25 @@
 			<scope>test</scope>
 			<version>4.11</version>
 		</dependency>
-		 <dependency>
+		<dependency>
 			<groupId>org.openmicroscopy</groupId>
 			<artifactId>omero-gateway</artifactId>
 			<version>5.6.7</version>
 		</dependency>
-		<!-->dependency>
-			<groupId>org.openmicroscopy</groupId>
-			<artifactId>omero-blitz</artifactId>
-			 <version>5.5.8</version>
-		</dependency-->
 		<dependency>
 			<groupId>edu.umassmed.omega</groupId>
 			<artifactId>commons</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>jfreechart</artifactId>
+					<groupId>jfreechart</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jcommon</artifactId>
+					<groupId>jcommon</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 
